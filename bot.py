@@ -95,9 +95,9 @@ DEIN JOB: Kundenanfragen freundlich, schnell und kompetent beantworten.
 INFORMATIONEN ÜBER DEN DIENST:
 - Anbieter: AP Digital Solution, Alexander Potzahr, Hamburg
 - Dienst: SecureBot AI - KI-gestützter IT-Security Berater
-- Free Plan: 5 Fragen/Tag (kostenlos, Basis-Antworten)
-- Pro Plan: 9,99€/Monat (20 Fragen/Tag, detaillierte Analysen mit Beispielen)
-- Business Plan: 29,99€/Monat (30 Fragen/Tag, Maximum-Analysen, Team bis 5 User, Priority Support)
+- Free Plan: 5 Fragen/Tag (kostenlos, kompakte Antworten)
+- Pro Plan: 9,99€/Monat (20 Fragen/Tag, ausführlichere Antworten, stärkeres KI-Modell)
+- Business Plan: 29,99€/Monat (30 Fragen/Tag, maximale Antworttiefe mit Code-Beispielen, Team bis 5 User)
 - Kontakt: securebot.ai.contact@gmail.com
 - Kündigung: Jederzeit per E-Mail zum Monatsende
 - 14-Tage Widerrufsrecht bei Bezahl-Abos
@@ -581,7 +581,7 @@ async def trial(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🎉 **7-Tage Pro Trial aktiviert!**\n\n"
         f"✓ 20 Fragen pro Tag\n"
-        f"✓ Detaillierte Analysen\n"
+        f"✓ Ausführlichere Antworten\n"
         f"✓ Gültig bis: {end_date}\n\n"
         "Stell mir jetzt deine Security-Fragen!\n"
         "Nach Ablauf: /upgrade für dauerhaften Zugang.",
@@ -615,14 +615,14 @@ async def upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 **Pro Plan - 9,99€/Monat**
 ✓ 20 Fragen pro Tag
-✓ Detaillierte Analysen mit Beispielen
-✓ Konkrete Tools & Konfigurationen
+✓ Ausführlichere Antworten mit Beispielen
+✓ Stärkeres KI-Modell
 
 **Business Plan - 29,99€/Monat**
 ✓ 30 Fragen pro Tag
-✓ Maximum-Analysen mit Code & Standards
+✓ Maximale Antworttiefe mit Code-Beispielen
 ✓ Team-Zugang (bis 5 User)
-✓ Priority KI-Support
+✓ Hinweise zu ISO 27001, BSI, NIST
 
 Wähle deinen Plan:
 """
@@ -645,8 +645,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "🚀 **Pro Plan - 9,99€/Monat**\n\n"
             "✓ 20 Fragen pro Tag\n"
-            "✓ Detaillierte Analysen mit Beispielen\n"
-            "✓ Konkrete Tools & Konfigurationen\n\n"
+            "✓ Ausführlichere Antworten mit Beispielen\n"
+            "✓ Stärkeres KI-Modell\n\n"
             "💳 [Jetzt upgraden](https://buy.stripe.com/cNi9AUekadJogJu5DggnK01)\n\n"
             "⚠️ Trage deinen **Telegram Username** beim Bezahlen ein!\n"
             "Dein Account wird nach Zahlungseingang freigeschaltet.",
@@ -656,9 +656,9 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "🏢 **Business Plan - 29,99€/Monat**\n\n"
             "✓ 30 Fragen pro Tag\n"
-            "✓ Maximum-Analysen mit Code & Standards\n"
+            "✓ Maximale Antworttiefe mit Code-Beispielen\n"
             "✓ Team-Zugang (bis 5 User)\n"
-            "✓ Priority KI-Support\n\n"
+            "✓ Hinweise zu ISO 27001, BSI, NIST\n\n"
             "💳 [Jetzt upgraden](https://buy.stripe.com/eVq8wQ0tk9t8eBm3v8gnK02)\n\n"
             "⚠️ Trage deinen **Telegram Username** beim Bezahlen ein!\n"
             "Dein Account wird nach Zahlungseingang freigeschaltet.",
@@ -764,7 +764,7 @@ async def agb(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 **KI-Hinweis (EU AI Act):**
 • Alle Antworten werden von KI generiert (Claude AI, Anthropic)
-• Der Support (inkl. Priority Support) ist KI-gestützt
+• Der Support ist KI-gestützt
 • Bei Bedarf Weiterleitung an menschlichen Mitarbeiter
 
 **Kündigung:** Jederzeit per E-Mail zum Monatsende.
