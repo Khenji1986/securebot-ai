@@ -226,6 +226,12 @@ def init_db():
     except sqlite3.OperationalError:
         pass  # Spalte existiert bereits
 
+    # Migration: stripe_subscription_id Spalte hinzufügen
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN stripe_subscription_id TEXT')
+    except sqlite3.OperationalError:
+        pass  # Spalte existiert bereits
+
     # Support Tickets
     c.execute('''
         CREATE TABLE IF NOT EXISTS support_tickets (
@@ -395,7 +401,7 @@ def get_plan_config(subscription: str) -> dict:
     else:
         return {
             'max_tokens': 1024,
-            'model': 'claude-haiku-3-5-20241022',
+            'model': 'claude-haiku-4-5-20251001',
             'prompt_addon': ''
         }
 
@@ -605,24 +611,28 @@ async def trial(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Upgrade Command"""
     keyboard = [
-        [InlineKeyboardButton("🚀 Pro (9,99€/Monat)", callback_data='upgrade_pro')],
-        [InlineKeyboardButton("🏢 Business (29,99€/Monat)", callback_data='upgrade_business')],
+        [InlineKeyboardButton("🚀 Pro - 9,99€/Monat", callback_data='upgrade_pro')],
+        [InlineKeyboardButton("🚀 Pro - 99,90€/Jahr (2 Monate gratis)", callback_data='upgrade_pro_year')],
+        [InlineKeyboardButton("🏢 Business - 29,99€/Monat", callback_data='upgrade_business')],
+        [InlineKeyboardButton("🏢 Business - 299,90€/Jahr (2 Monate gratis)", callback_data='upgrade_business_year')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     upgrade_text = """
 ⬆️ **Upgrade dein SecureBot AI**
 
-**Pro Plan - 9,99€/Monat**
+**Pro Plan**
 ✓ 20 Fragen pro Tag
 ✓ Ausführlichere Antworten mit Beispielen
 ✓ Stärkeres KI-Modell
+→ 9,99€/Monat oder 99,90€/Jahr (spare ~20€)
 
-**Business Plan - 29,99€/Monat**
+**Business Plan**
 ✓ 30 Fragen pro Tag
 ✓ Maximale Antworttiefe mit Code-Beispielen
 ✓ Team-Zugang (bis 5 User)
 ✓ Hinweise zu ISO 27001, BSI, NIST
+→ 29,99€/Monat oder 299,90€/Jahr (spare ~60€)
 
 Wähle deinen Plan:
 """
@@ -652,6 +662,17 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Dein Account wird nach Zahlungseingang freigeschaltet.",
             parse_mode='Markdown'
         )
+    elif query.data == 'upgrade_pro_year':
+        await query.edit_message_text(
+            "🚀 **Pro Plan - 99,90€/Jahr** (spare ~20€)\n\n"
+            "✓ 20 Fragen pro Tag\n"
+            "✓ Ausführlichere Antworten mit Beispielen\n"
+            "✓ Stärkeres KI-Modell\n\n"
+            "💳 [Jetzt upgraden](https://buy.stripe.com/4gMeVe6RI48Obpa4zcgnK03)\n\n"
+            "⚠️ Trage deinen **Telegram Username** beim Bezahlen ein!\n"
+            "Dein Account wird nach Zahlungseingang freigeschaltet.",
+            parse_mode='Markdown'
+        )
     elif query.data == 'upgrade_business':
         await query.edit_message_text(
             "🏢 **Business Plan - 29,99€/Monat**\n\n"
@@ -660,6 +681,18 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "✓ Team-Zugang (bis 5 User)\n"
             "✓ Hinweise zu ISO 27001, BSI, NIST\n\n"
             "💳 [Jetzt upgraden](https://buy.stripe.com/eVq8wQ0tk9t8eBm3v8gnK02)\n\n"
+            "⚠️ Trage deinen **Telegram Username** beim Bezahlen ein!\n"
+            "Dein Account wird nach Zahlungseingang freigeschaltet.",
+            parse_mode='Markdown'
+        )
+    elif query.data == 'upgrade_business_year':
+        await query.edit_message_text(
+            "🏢 **Business Plan - 299,90€/Jahr** (spare ~60€)\n\n"
+            "✓ 30 Fragen pro Tag\n"
+            "✓ Maximale Antworttiefe mit Code-Beispielen\n"
+            "✓ Team-Zugang (bis 5 User)\n"
+            "✓ Hinweise zu ISO 27001, BSI, NIST\n\n"
+            "💳 [Jetzt upgraden](https://buy.stripe.com/fZu6oI3Fw9t8dxi3v8gnK04)\n\n"
             "⚠️ Trage deinen **Telegram Username** beim Bezahlen ein!\n"
             "Dein Account wird nach Zahlungseingang freigeschaltet.",
             parse_mode='Markdown'
@@ -922,7 +955,7 @@ async def ask_support_agent(question: str, user_info: str) -> str:
     """Fragt den Support-Agent"""
     try:
         message = client.messages.create(
-            model="claude-haiku-3-5-20241022",
+            model="claude-haiku-4-5-20251001",
             max_tokens=512,
             system=SUPPORT_PROMPT,
             messages=[
@@ -1342,20 +1375,35 @@ async def check_stripe_payments(context: ContextTypes.DEFAULT_TYPE):
                 continue
 
             # Plan bestimmen anhand des Betrags (in Cent)
+            # Pro: 999 (monatlich) oder 9990 (jährlich)
+            # Business: 2999 (monatlich) oder 29990 (jährlich)
             amount = session.amount_total
-            if amount >= 2999:
+            if amount >= 29990 or amount == 2999:
                 plan = 'business'
-            elif amount >= 999:
+            elif amount >= 9990 or amount == 999:
                 plan = 'pro'
             else:
                 continue
 
+            # Stripe Subscription-ID holen (für Recurring)
+            stripe_sub_id = None
+            if session.subscription:
+                stripe_sub_id = session.subscription
+
             # User in DB finden und aktivieren
-            end_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
-            c.execute(
-                'UPDATE users SET subscription = ?, subscription_end = ? WHERE username = ?',
-                (plan, end_date, telegram_username)
-            )
+            if stripe_sub_id:
+                # Recurring: Kein festes Enddatum, Stripe bestimmt
+                c.execute(
+                    'UPDATE users SET subscription = ?, subscription_end = NULL, stripe_subscription_id = ? WHERE username = ?',
+                    (plan, stripe_sub_id, telegram_username)
+                )
+            else:
+                # Einmalzahlung (Fallback): 30 Tage
+                end_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+                c.execute(
+                    'UPDATE users SET subscription = ?, subscription_end = ? WHERE username = ?',
+                    (plan, end_date, telegram_username)
+                )
 
             # Zahlung als verarbeitet markieren
             c.execute(
@@ -1369,12 +1417,16 @@ async def check_stripe_payments(context: ContextTypes.DEFAULT_TYPE):
                 user_row = c.fetchone()
                 if user_row:
                     try:
+                        if stripe_sub_id:
+                            status_text = "Dein Abo verlängert sich automatisch monatlich."
+                        else:
+                            status_text = f"Gültig bis: {end_date}"
                         await context.bot.send_message(
                             chat_id=user_row[0],
                             text=f"🎉 **Willkommen im {plan.upper()} Plan!**\n\n"
                                  f"Dein Account wurde erfolgreich freigeschaltet.\n"
-                                 f"Gültig bis: {end_date}\n\n"
-                                 f"Du hast jetzt unbegrenzten Zugang! Stell mir jede Security-Frage.",
+                                 f"{status_text}\n\n"
+                                 f"Stell mir jetzt deine Security-Fragen!",
                             parse_mode='Markdown'
                         )
                     except Exception as e:
@@ -1406,22 +1458,77 @@ async def check_stripe_payments(context: ContextTypes.DEFAULT_TYPE):
 
 
 async def check_subscription_expiry(context: ContextTypes.DEFAULT_TYPE):
-    """Prüft Abo-Abläufe: 3-Tage-Erinnerung und automatisches Zurücksetzen auf Free"""
+    """Prüft Abo-Status: Stripe Subscriptions + Einmalzahlungen mit Ablaufdatum"""
     conn = sqlite3.connect('/app/data/securebot.db')
     c = conn.cursor()
 
     today = datetime.now().date()
+    changes = 0
+
+    # 1) Stripe Recurring Subscriptions prüfen
+    if STRIPE_API_KEY:
+        c.execute(
+            "SELECT user_id, username, subscription, stripe_subscription_id FROM users "
+            "WHERE subscription IN ('pro', 'business') AND stripe_subscription_id IS NOT NULL"
+        )
+        stripe_users = c.fetchall()
+
+        for user_row in stripe_users:
+            user_id, username, plan, sub_id = user_row
+            try:
+                stripe_sub = stripe.Subscription.retrieve(sub_id)
+                # Aktive Subscription: active, trialing
+                if stripe_sub.status in ('active', 'trialing'):
+                    continue  # Alles gut
+
+                # Gekündigt oder fehlgeschlagen
+                if stripe_sub.status in ('canceled', 'unpaid', 'incomplete_expired'):
+                    c.execute(
+                        "UPDATE users SET subscription = 'free', subscription_end = NULL, stripe_subscription_id = NULL WHERE user_id = ?",
+                        (user_id,)
+                    )
+                    changes += 1
+                    try:
+                        await context.bot.send_message(
+                            chat_id=user_id,
+                            text=f"⚠️ **Abo beendet**\n\n"
+                                 f"Dein **{plan.upper()}** Plan ist nicht mehr aktiv.\n"
+                                 f"Du bist jetzt im Free-Plan ({FREE_DAILY_LIMIT} Fragen/Tag).\n\n"
+                                 f"Erneut abonnieren: /upgrade",
+                            parse_mode='Markdown'
+                        )
+                    except Exception as e:
+                        logger.error(f"Ablauf-Benachrichtigung fehlgeschlagen für {user_id}: {e}")
+
+                    if ADMIN_USER_ID:
+                        try:
+                            await context.bot.send_message(
+                                chat_id=int(ADMIN_USER_ID),
+                                text=f"📉 **Stripe Abo beendet:** @{username} ({plan.upper()}) - Status: {stripe_sub.status}",
+                                parse_mode='Markdown'
+                            )
+                        except Exception:
+                            pass
+
+                    logger.info(f"Stripe Abo beendet: @{username} ({plan}) - Status: {stripe_sub.status}")
+
+                # past_due: Zahlung fehlgeschlagen, Stripe versucht nochmal
+                elif stripe_sub.status == 'past_due':
+                    logger.warning(f"Stripe Abo past_due: @{username} ({plan}) - Zahlung ausstehend")
+
+            except Exception as e:
+                logger.error(f"Stripe Subscription Check fehlgeschlagen für {user_id}: {e}")
+
+    # 2) Einmalzahlungen / Trials mit festem Ablaufdatum
     warn_date = (datetime.now() + timedelta(days=3)).strftime('%Y-%m-%d')
 
-    # 1) Erinnerung: Abo läuft in 3 Tagen ab
+    # Erinnerung: Abo läuft in 3 Tagen ab (nur für Nicht-Stripe-Abos)
     c.execute(
         "SELECT user_id, username, subscription, subscription_end FROM users "
-        "WHERE subscription IN ('pro', 'business') AND subscription_end = ?",
+        "WHERE subscription IN ('pro', 'business') AND subscription_end = ? AND stripe_subscription_id IS NULL",
         (warn_date,)
     )
-    expiring_soon = c.fetchall()
-
-    for user_row in expiring_soon:
+    for user_row in c.fetchall():
         try:
             await context.bot.send_message(
                 chat_id=user_row[0],
@@ -1434,10 +1541,10 @@ async def check_subscription_expiry(context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             logger.error(f"Abo-Erinnerung fehlgeschlagen für {user_row[0]}: {e}")
 
-    # 2) Abgelaufene Abos auf Free zurücksetzen
+    # Abgelaufene Einmalzahlungen/Trials auf Free zurücksetzen
     c.execute(
         "SELECT user_id, username, subscription, subscription_end FROM users "
-        "WHERE subscription IN ('pro', 'business') AND subscription_end < ?",
+        "WHERE subscription IN ('pro', 'business') AND subscription_end < ? AND stripe_subscription_id IS NULL",
         (today.strftime('%Y-%m-%d'),)
     )
     expired = c.fetchall()
@@ -1447,19 +1554,19 @@ async def check_subscription_expiry(context: ContextTypes.DEFAULT_TYPE):
             "UPDATE users SET subscription = 'free', subscription_end = NULL WHERE user_id = ?",
             (user_row[0],)
         )
+        changes += 1
         try:
             await context.bot.send_message(
                 chat_id=user_row[0],
                 text=f"⚠️ **Abo abgelaufen**\n\n"
                      f"Dein **{user_row[2].upper()}** Plan ist abgelaufen.\n"
                      f"Du bist jetzt im Free-Plan ({FREE_DAILY_LIMIT} Fragen/Tag).\n\n"
-                     f"Jetzt verlängern: /upgrade",
+                     f"Jetzt upgraden: /upgrade",
                 parse_mode='Markdown'
             )
         except Exception as e:
             logger.error(f"Ablauf-Benachrichtigung fehlgeschlagen für {user_row[0]}: {e}")
 
-        # Lee benachrichtigen
         if ADMIN_USER_ID:
             try:
                 await context.bot.send_message(
@@ -1470,9 +1577,9 @@ async def check_subscription_expiry(context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
 
-    if expired:
+    if changes or expired:
         conn.commit()
-        logger.info(f"Abo-Check: {len(expired)} abgelaufene Abos zurückgesetzt, {len(expiring_soon)} Erinnerungen gesendet")
+        logger.info(f"Abo-Check: {changes} Änderungen, {len(expired)} Einmalzahlungen abgelaufen")
 
     conn.close()
 
