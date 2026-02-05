@@ -6,7 +6,7 @@ Ich habe einen KI-Security-Berater gebaut. Auf Telegram. Kostenlos testbar.
 
 Warum?
 
-Als IT-Security Manager werde ich taeglich die gleichen Fragen gefragt:
+Als IT-Security Manager werde ich täglich die gleichen Fragen gefragt:
 - "Wie sichere ich mein Netzwerk ab?"
 - "Was muss ich bei der DSGVO beachten?"
 - "Wie erkenne ich Phishing?"
@@ -19,13 +19,13 @@ Also habe ich SecureBot AI gebaut:
 - Netzwerksicherheit, DSGVO-Orientierung, Security-Konzepte, Cloud Security Best Practices
 - 5 Fragen pro Tag kostenlos
 
-Fuer Teams und Power-User gibt es Pro (9,99 EUR/Monat) und Business (29,99 EUR/Monat) mit tieferen Analysen, Code-Beispielen und Team-Zugang.
+Für Teams und Power-User gibt es Pro (9,99€/Monat) und Business (29,99€/Monat) mit ausführlicheren Antworten, Code-Beispielen und Team-Zugang.
 
-Kein Login. Keine App. Einfach auf Telegram oeffnen und fragen.
+Kein Login. Keine App. Einfach auf Telegram öffnen und fragen.
 
 Link in den Kommentaren.
 
-Was meint ihr - nuetzlich oder ueberflüssig?
+Was meint ihr - nützlich oder überflüssig?
 
 #CyberSecurity #ITSecurity #AI #KI #DSGVO #InfoSec #Telegram #Startup
 
