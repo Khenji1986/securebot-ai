@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBot AI - Dein KI Security Berater</title>
+    <meta name="description" content="SecureBot AI - KI-gestuetzter IT-Security Berater auf Telegram. Cybersecurity Beratung, DSGVO Compliance, Penetration Testing Tipps - sofort verfuegbar.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #e0e0e0;
+            background: #0a0a0a;
+            line-height: 1.6;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+        .hero h1 span { color: #00d4ff; }
+        .hero p {
+            font-size: 1.2rem;
+            color: #aaa;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+        .cta-btn {
+            display: inline-block;
+            background: #00d4ff;
+            color: #000;
+            padding: 16px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+        }
+        .hero-sub {
+            margin-top: 12px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Features */
+        .features {
+            padding: 60px 20px;
+            background: #111;
+        }
+        .features h2 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            color: #fff;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+        .feature-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .feature-card h3 {
+            color: #00d4ff;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        .feature-card p { color: #999; font-size: 0.95rem; }
+
+        /* Pricing */
+        .pricing {
+            padding: 60px 20px;
+        }
+        .pricing h2 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            color: #fff;
+        }
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+        .price-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .price-card.featured {
+            border-color: #00d4ff;
+            position: relative;
+        }
+        .price-card.featured::before {
+            content: 'BELIEBT';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00d4ff;
+            color: #000;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .price-card h3 { color: #fff; font-size: 1.3rem; margin-bottom: 8px; }
+        .price-amount {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #00d4ff;
+            margin: 16px 0;
+        }
+        .price-amount span { font-size: 0.9rem; color: #666; }
+        .price-features {
+            list-style: none;
+            text-align: left;
+            margin: 24px 0;
+        }
+        .price-features li {
+            padding: 6px 0;
+            color: #bbb;
+            font-size: 0.95rem;
+        }
+        .price-features li::before {
+            content: '\2713 ';
+            color: #00d4ff;
+            font-weight: 700;
+        }
+        .price-btn {
+            display: inline-block;
+            padding: 12px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .price-btn-free {
+            background: #2a2a2a;
+            color: #fff;
+        }
+        .price-btn-pro {
+            background: #00d4ff;
+            color: #000;
+        }
+        .price-btn-biz {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #00d4ff;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid #222;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        .footer a { color: #00d4ff; text-decoration: none; }
+        .footer-links { margin-bottom: 12px; }
+        .footer-links a { margin: 0 12px; }
+
+        /* KI-Hinweis */
+        .ai-notice {
+            text-align: center;
+            padding: 20px;
+            background: #0d1117;
+            color: #666;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <h1><span>SecureBot AI</span> - Dein KI Security Berater</h1>
+        <p>Cybersecurity Beratung rund um die Uhr. Direkt auf Telegram. Powered by Claude AI.</p>
+        <a href="https://t.me/Lees_Securebot" class="cta-btn">Jetzt kostenlos starten</a>
+        <p class="hero-sub">Keine Registrierung. 5 Fragen/Tag gratis.</p>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+    <div class="container">
+        <h2>Was kann SecureBot AI?</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>Cybersecurity Beratung</h3>
+                <p>Netzwerksicherheit, Firewalls, VPN, IDS/IPS - kompetente Antworten in Sekunden.</p>
+            </div>
+            <div class="feature-card">
+                <h3>DSGVO & Compliance</h3>
+                <p>Datenschutz-Fragen, Compliance-Checks, NIS2, ISO 27001 - alles auf einen Blick.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Penetration Testing</h3>
+                <p>Ethical Hacking Tipps, OWASP Top 10, Vulnerability Assessment Anleitungen.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Incident Response</h3>
+                <p>Sofort-Hilfe bei Security-Vorfaellen. Malware-Analyse, Forensik-Grundlagen.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Cloud Security</h3>
+                <p>AWS, Azure, GCP - sichere Konfigurationen und Best Practices.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Sichere Programmierung</h3>
+                <p>Code Reviews, SQL Injection, XSS Prevention - entwickle sicheren Code.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing">
+    <div class="container">
+        <h2>Einfache Preise</h2>
+        <div class="price-grid">
+            <div class="price-card">
+                <h3>Free</h3>
+                <div class="price-amount">0 EUR <span>/Monat</span></div>
+                <ul class="price-features">
+                    <li>5 Fragen pro Tag</li>
+                    <li>Basis-Antworten</li>
+                    <li>KI-Support</li>
+                </ul>
+                <a href="https://t.me/Lees_Securebot" class="price-btn price-btn-free">Kostenlos starten</a>
+            </div>
+            <div class="price-card featured">
+                <h3>Pro</h3>
+                <div class="price-amount">9,99 EUR <span>/Monat</span></div>
+                <ul class="price-features">
+                    <li>20 Fragen pro Tag</li>
+                    <li>Detaillierte Analysen</li>
+                    <li>Konkrete Beispiele & Tools</li>
+                    <li>KI-Support</li>
+                </ul>
+                <a href="https://buy.stripe.com/cNi9AUekadJogJu5DggnK01" class="price-btn price-btn-pro">Pro holen</a>
+            </div>
+            <div class="price-card">
+                <h3>Business</h3>
+                <div class="price-amount">29,99 EUR <span>/Monat</span></div>
+                <ul class="price-features">
+                    <li>30 Fragen pro Tag</li>
+                    <li>Maximum-Analysen mit Code</li>
+                    <li>Team-Zugang (bis 5 User)</li>
+                    <li>Priority KI-Support</li>
+                    <li>Standards & Risikoanalyse</li>
+                </ul>
+                <a href="https://buy.stripe.com/eVq8wQ0tk9t8eBm3v8gnK02" class="price-btn price-btn-biz">Business holen</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- KI-Hinweis -->
+<div class="ai-notice">
+    Alle Antworten werden von KI generiert (Claude AI). Keine professionelle Sicherheitsberatung. Nutzung auf eigenes Risiko.
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-links">
+        <a href="https://t.me/Lees_Securebot">Telegram Bot</a>
+        <a href="mailto:securebot.ai.contact@gmail.com">Kontakt</a>
+    </div>
+    <p>AP Digital Solution - Alexander Potzahr, Hamburg | Kleinunternehmer gem. &sect; 19 UStG</p>
+</footer>
+
+</body>
+</html>
