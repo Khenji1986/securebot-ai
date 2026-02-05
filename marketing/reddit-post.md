@@ -12,7 +12,7 @@ I'm an IT Security Manager from Germany and I built a Telegram bot that acts as 
 
 **What it does:**
 - Answers security questions in English and German
-- Covers: network security, DSGVO/GDPR, pentesting, cloud security (AWS/Azure/GCP), OWASP Top 10, incident response, cryptography
+- Covers: network security basics, DSGVO/GDPR orientation, security concepts (OWASP Top 10), cloud security best practices (AWS/Azure/GCP), cryptography basics
 - Gives practical, actionable advice with examples
 - Free tier: 5 questions/day
 

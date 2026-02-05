@@ -16,7 +16,7 @@ Die Antworten sind oft dieselben. Aber jedes Mal individuell formuliert.
 Also habe ich SecureBot AI gebaut:
 - Telegram Bot mit Claude AI im Hintergrund
 - Antwortet auf Deutsch und Englisch
-- Netzwerksicherheit, DSGVO, Pentesting, Cloud Security, OWASP Top 10
+- Netzwerksicherheit, DSGVO-Orientierung, Security-Konzepte, Cloud Security Best Practices
 - 5 Fragen pro Tag kostenlos
 
 Fuer Teams und Power-User gibt es Pro (9,99 EUR/Monat) und Business (29,99 EUR/Monat) mit tieferen Analysen, Code-Beispielen und Team-Zugang.
