@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  securebot:
+    build: .
+    container_name: securebot-ai
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,17 @@
+# Secrets - NIEMALS committen!
+.env
+
+# Database
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
