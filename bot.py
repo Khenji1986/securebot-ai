@@ -7,10 +7,13 @@ Powered by Claude AI (Anthropic)
 """
 
 import os
+import re
+import json
 import logging
 import sqlite3
 from datetime import datetime, timedelta
 from typing import Optional
+from urllib.parse import urlparse
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -52,6 +55,20 @@ BUSINESS_MONTHLY_PRICE = 29.99
 
 # Claude Client
 client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+# URL-Erkennung für Phishing-Checker
+URL_PATTERN = re.compile(
+    r'https?://[^\s<>"{}|\\^`\[\]]+|'
+    r'(?:www\.)[^\s<>"{}|\\^`\[\]]+'
+, re.IGNORECASE)
+
+# Fragewörter - wenn enthalten, ist es eine normale Frage, kein Phishing-Check
+QUESTION_WORDS = ['wie', 'was ', 'warum', 'wann', 'wer ', 'welch', 'kann ', 'soll',
+                  'how ', 'what ', 'why ', 'when ', 'who ', 'which', 'can ', 'should',
+                  'erkläre', 'explain', 'hilf', 'help', 'zeig', 'show', 'ist es']
+
+# Phishing Rate-Limit
+PHISHING_DAILY_LIMIT = 10
 
 # System Prompt für Security-Expertise
 SYSTEM_PROMPT = """Du bist SecureBot AI, ein erfahrener IT-Security Berater.
@@ -242,6 +259,45 @@ def init_db():
             ai_response TEXT,
             escalated INTEGER DEFAULT 0,
             resolved INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Phishing-Checks
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS phishing_checks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            input_text TEXT,
+            urls_found TEXT,
+            risk_score INTEGER,
+            findings TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Security Audits
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS security_audits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            grade TEXT,
+            score INTEGER,
+            max_score INTEGER,
+            answers TEXT,
+            recommendations TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Incident Responses
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS incident_responses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            incident_type TEXT,
+            phases_completed INTEGER DEFAULT 0,
+            completed INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -438,7 +494,569 @@ async def ask_claude(question: str, subscription: str = 'free') -> str:
         return "Entschuldigung, es gab einen Fehler bei der Verarbeitung. Bitte versuche es erneut."
 
 
-# Telegram Handlers
+# ========== FEATURE 1: PHISHING-CHECKER ==========
+
+SUSPICIOUS_TLDS = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top',
+                   '.click', '.link', '.work', '.date', '.racing', '.win', '.buzz']
+
+BRAND_TYPOS = {
+    'paypal': ['paypa1', 'paypai', 'paypal-', 'paypaI', 'peypal', 'payp4l'],
+    'google': ['g00gle', 'googe', 'googie', 'google-login', 'g0ogle'],
+    'microsoft': ['micros0ft', 'microsft', 'microsoft-', 'micr0soft'],
+    'amazon': ['amaz0n', 'arnazon', 'amazom', 'amazon-'],
+    'apple': ['app1e', 'appie', 'apple-id-', 'app1e-'],
+    'facebook': ['faceb00k', 'facebok', 'facebook-'],
+    'netflix': ['netf1ix', 'netfiix', 'netflix-'],
+    'sparkasse': ['sparkasse-', 'sparkase', 'sparlasse'],
+    'volksbank': ['volksbank-', 'volkebank'],
+    'commerzbank': ['commerzbank-', 'comerzbank'],
+    'postbank': ['postbank-', 'p0stbank'],
+    'dhl': ['dhl-paket', 'dh1-', 'dhl-track'],
+    'deutsche-bank': ['deutsche-bank-', 'deutschebank-'],
+}
+
+
+def analyze_url_local(url: str) -> dict:
+    """Lokale URL-Analyse - kein API-Call, 0 Kosten"""
+    score = 0
+    findings = []
+
+    try:
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        parsed = urlparse(url)
+        domain = parsed.netloc.lower()
+        path = parsed.path.lower()
+    except Exception:
+        return {'score': 5, 'findings': ['URL konnte nicht geparst werden'], 'domain': url, 'url': url}
+
+    # 1. IP-Adresse statt Domain
+    if re.match(r'\d+\.\d+\.\d+\.\d+', domain):
+        score += 3
+        findings.append("IP-Adresse statt Domain")
+
+    # 2. Verdächtige TLDs
+    for tld in SUSPICIOUS_TLDS:
+        if domain.endswith(tld):
+            score += 2
+            findings.append(f"Verdächtige Top-Level-Domain ({tld})")
+            break
+
+    # 3. Typosquatting
+    for brand, typos in BRAND_TYPOS.items():
+        for typo in typos:
+            if typo in domain:
+                score += 4
+                findings.append(f"Typosquatting: '{typo}' imitiert '{brand}'")
+                break
+
+    # 4. Zu viele Subdomains
+    if domain.count('.') >= 4:
+        score += 2
+        findings.append(f"Ungewöhnlich viele Subdomains ({domain.count('.')})")
+
+    # 5. Verdächtige Pfade
+    sus_paths = ['login', 'signin', 'verify', 'confirm', 'secure', 'account', 'banking', 'password']
+    for sus in sus_paths:
+        if sus in path:
+            score += 1
+            findings.append(f"Verdächtiger Pfad: '{sus}'")
+            break
+
+    # 6. Überlange URL
+    if len(url) > 100:
+        score += 1
+        findings.append("Ungewöhnlich lange URL")
+
+    # 7. URL-Verschleierung
+    if url.count('%') > 3:
+        score += 2
+        findings.append("Starke URL-Kodierung (Verschleierung)")
+
+    # 8. @-Zeichen in URL
+    if '@' in parsed.netloc:
+        score += 3
+        findings.append("@-Zeichen in URL (User-Info-Angriff)")
+
+    # 9. Kein HTTPS
+    if parsed.scheme == 'http':
+        score += 1
+        findings.append("Kein HTTPS")
+
+    # 10. Homograph-Angriff
+    if any(ord(c) > 127 for c in domain):
+        score += 3
+        findings.append("Internationalisierte Zeichen (Homograph-Angriff)")
+
+    # 11. Nicht-Standard Port
+    if parsed.port and parsed.port not in [80, 443]:
+        score += 1
+        findings.append(f"Nicht-Standard Port: {parsed.port}")
+
+    return {'score': min(score, 10), 'findings': findings, 'domain': domain, 'url': url}
+
+
+def analyze_text_for_phishing(text: str) -> dict:
+    """Analysiert Text auf Social Engineering Muster"""
+    score = 0
+    findings = []
+    text_lower = text.lower()
+
+    urgency = ['sofort', 'dringend', 'innerhalb von 24', 'immediately', 'urgent',
+               'konto wird gesperrt', 'account suspended', 'letzte mahnung', 'letzte warnung']
+    for u in urgency:
+        if u in text_lower:
+            score += 2
+            findings.append(f"Dringlichkeits-Taktik: '{u}'")
+            break
+
+    cred_patterns = ['passwort', 'password', 'pin eingeben', 'tan', 'zugangsdaten',
+                     'kreditkarte', 'bankdaten', 'verifizieren', 'bestätigen sie ihre']
+    for c in cred_patterns:
+        if c in text_lower:
+            score += 2
+            findings.append(f"Abfrage sensibler Daten: '{c}'")
+            break
+
+    authority = ['polizei', 'finanzamt', 'staatsanwaltschaft', 'gericht', 'bundeskriminalamt', 'europol']
+    for a in authority:
+        if a in text_lower:
+            score += 2
+            findings.append(f"Autoritäts-Imitation: '{a}'")
+            break
+
+    return {'score': min(score, 10), 'findings': findings}
+
+
+def log_phishing_check(user_id: int, input_text: str, urls: list, risk_score: int, findings: list):
+    """Speichert Phishing-Check in DB"""
+    conn = sqlite3.connect('/app/data/securebot.db')
+    c = conn.cursor()
+    c.execute(
+        'INSERT INTO phishing_checks (user_id, input_text, urls_found, risk_score, findings) VALUES (?, ?, ?, ?, ?)',
+        (user_id, input_text[:500], json.dumps(urls), risk_score, json.dumps(findings, ensure_ascii=False))
+    )
+    conn.commit()
+    conn.close()
+
+
+async def handle_phishing_check(update: Update, context: ContextTypes.DEFAULT_TYPE, urls: list, original_text: str):
+    """Haupt-Phishing-Check Handler"""
+    user_id = update.effective_user.id
+    thinking_msg = await update.message.reply_text("🔍 Analysiere auf Phishing-Indikatoren...")
+
+    results = []
+    for url in urls[:3]:
+        results.append(analyze_url_local(url))
+
+    text_result = analyze_text_for_phishing(original_text)
+
+    max_url_score = max((r['score'] for r in results), default=0)
+    combined_score = min(max(max_url_score, text_result['score']), 10)
+
+    if combined_score <= 2:
+        risk_emoji, risk_text = "🟢", "NIEDRIG"
+    elif combined_score <= 5:
+        risk_emoji, risk_text = "🟡", "MITTEL"
+    elif combined_score <= 7:
+        risk_emoji, risk_text = "🟠", "HOCH"
+    else:
+        risk_emoji, risk_text = "🔴", "SEHR HOCH"
+
+    lines = [f"🛡️ Phishing-Analyse\n", f"{risk_emoji} Risiko: {combined_score}/10 ({risk_text})\n"]
+
+    all_findings = []
+    for r in results:
+        all_findings.extend(r['findings'])
+    all_findings.extend(text_result['findings'])
+
+    if all_findings:
+        lines.append("Befunde:")
+        for f in all_findings:
+            lines.append(f"  ⚠️ {f}")
+    else:
+        lines.append("Keine offensichtlichen Phishing-Indikatoren gefunden.")
+
+    if combined_score >= 6:
+        lines.append("\nEmpfehlung: NICHT klicken! Starke Phishing-Merkmale erkannt.")
+    elif combined_score >= 3:
+        lines.append("\nEmpfehlung: Vorsicht! Absender über einen unabhängigen Kanal verifizieren.")
+    else:
+        lines.append("\nEmpfehlung: Sieht unauffällig aus, aber bleibe grundsätzlich wachsam.")
+
+    # KI-Tiefenanalyse für Pro/Business bei Score >= 3
+    subscription = get_effective_subscription(user_id)
+    if subscription in ['pro', 'business'] and combined_score >= 3:
+        try:
+            ai_msg = client.messages.create(
+                model='claude-haiku-4-5-20251001',
+                max_tokens=256,
+                system="Du bist ein Phishing-Experte. Analysiere die URL/Text. Antworte in 2-3 Sätzen: Risiko und Empfehlung. BESUCHE KEINE URLs.",
+                messages=[{"role": "user", "content": f"Analysiere: {original_text[:500]}"}]
+            )
+            lines.append(f"\n🤖 KI-Tiefenanalyse:\n{ai_msg.content[0].text}")
+        except Exception:
+            pass
+
+    lines.append("\n💡 Tipp: /check für den Phishing-Checker")
+
+    response_text = '\n'.join(lines)
+    await thinking_msg.edit_text(response_text)
+
+    log_phishing_check(user_id, original_text, [r['url'] for r in results], combined_score, all_findings)
+
+
+async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/check - Expliziter Phishing-Check"""
+    if not context.args:
+        await update.message.reply_text(
+            "🛡️ Phishing-Checker\n\n"
+            "Nutzung:\n"
+            "1. Sende einen verdächtigen Link direkt\n"
+            "2. /check https://verdaechtige-url.com\n"
+            "3. Leite eine verdächtige Nachricht weiter\n\n"
+            "Kostenlos für alle User!"
+        )
+        return
+
+    text = ' '.join(context.args)
+    urls = URL_PATTERN.findall(text)
+    if not urls:
+        urls = [text]
+    await handle_phishing_check(update, context, urls, text)
+
+
+# ========== FEATURE 2: SECURITY AUDIT ==========
+
+AUDIT_QUESTIONS = [
+    {'id': 1, 'cat': 'Passwörter', 'q': 'Verwendest du einen Passwort-Manager?',
+     'opts': [('Ja, für alle Konten', 3), ('Ja, teilweise', 2), ('Nein, merke mir Passwörter', 1), ('Überall das gleiche Passwort', 0)]},
+    {'id': 2, 'cat': '2FA', 'q': 'Nutzt du Zwei-Faktor-Authentifizierung?',
+     'opts': [('Ja, überall', 3), ('Nur bei wichtigen Konten', 2), ('Nur bei einem', 1), ('Was ist 2FA?', 0)]},
+    {'id': 3, 'cat': 'Updates', 'q': 'Wie hältst du Software aktuell?',
+     'opts': [('Auto-Updates überall', 3), ('Regelmäßig manuell', 2), ('Gelegentlich', 1), ('Selten bis nie', 0)]},
+    {'id': 4, 'cat': 'Backup', 'q': 'Wie sicherst du wichtige Daten?',
+     'opts': [('3-2-1 Backup-Regel', 3), ('Cloud-Backups', 2), ('Gelegentlich', 1), ('Gar nicht', 0)]},
+    {'id': 5, 'cat': 'Netzwerk', 'q': 'Wie schützt du dein Heimnetzwerk?',
+     'opts': [('Eigenes PW + Gastnetz + Firewall', 3), ('Router-PW geändert', 2), ('Standard-Einstellungen', 1), ('Weiß nicht', 0)]},
+    {'id': 6, 'cat': 'E-Mail', 'q': 'Wie gehst du mit verdächtigen E-Mails um?',
+     'opts': [('Prüfe Header & Links, melde', 3), ('Lösche sofort', 2), ('Schaue mir Inhalt an', 1), ('Öffne sie manchmal', 0)]},
+    {'id': 7, 'cat': 'VPN', 'q': 'Nutzt du VPN in öffentlichen WLANs?',
+     'opts': [('Immer', 3), ('Meistens', 2), ('Selten', 1), ('Was ist VPN?', 0)]},
+    {'id': 8, 'cat': 'Datenschutz', 'q': 'Wie gehst du mit App-Berechtigungen um?',
+     'opts': [('Prüfe und minimiere', 3), ('Schaue bei neuen Apps', 2), ('Akzeptiere meistens', 1), ('Denke nie darüber nach', 0)]},
+    {'id': 9, 'cat': 'Verschlüsselung', 'q': 'Sind deine Geräte verschlüsselt?',
+     'opts': [('Ja, alle', 3), ('Nur Smartphone', 2), ('Nicht sicher', 1), ('Nein', 0)]},
+    {'id': 10, 'cat': 'Awareness', 'q': 'Wie informierst du dich über Security?',
+     'opts': [('Aktiv: Blogs, BSI, Newsletter', 3), ('Gelegentlich Nachrichten', 2), ('Nur nach Vorfällen', 1), ('Gar nicht', 0)]},
+]
+
+
+def calculate_audit_grade(total_score: int) -> tuple:
+    pct = (total_score / 30) * 100
+    if pct >= 90: return 'A', pct, 'Ausgezeichnet! Sehr gut aufgestellt.'
+    if pct >= 75: return 'B', pct, 'Gut! Einige Verbesserungen möglich.'
+    if pct >= 60: return 'C', pct, 'Befriedigend. Mehrere Lücken.'
+    if pct >= 40: return 'D', pct, 'Mangelhaft. Dringender Handlungsbedarf!'
+    return 'F', pct, 'Kritisch! Sofortiger Handlungsbedarf!'
+
+
+async def audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/audit - Security Quick-Check starten"""
+    user_id = update.effective_user.id
+    subscription = get_effective_subscription(user_id)
+
+    if subscription == 'free':
+        await update.message.reply_text(
+            "🔒 Der Security Audit ist für Pro & Business verfügbar.\n\n/upgrade oder /trial für 7 Tage kostenlos!"
+        )
+        return
+
+    context.user_data['audit'] = {'active': True, 'current': 0, 'answers': []}
+    await send_audit_question(update.message, context)
+
+
+async def send_audit_question(message, context):
+    """Sendet die nächste Audit-Frage"""
+    audit = context.user_data.get('audit', {})
+    idx = audit.get('current', 0)
+
+    if idx >= len(AUDIT_QUESTIONS):
+        await finish_audit(message, context)
+        return
+
+    q = AUDIT_QUESTIONS[idx]
+    keyboard = []
+    for i, (label, _) in enumerate(q['opts']):
+        keyboard.append([InlineKeyboardButton(label, callback_data=f"audit_{q['id']}_{i}")])
+
+    await message.reply_text(
+        f"📋 Security Audit - Frage {idx + 1}/{len(AUDIT_QUESTIONS)}\n"
+        f"Kategorie: {q['cat']}\n\n"
+        f"{q['q']}",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+async def handle_audit_callback(query, context):
+    """Verarbeitet Audit-Antworten"""
+    audit = context.user_data.get('audit', {})
+    if not audit.get('active'):
+        return
+
+    parts = query.data.split('_')
+    q_id = int(parts[1])
+    opt_idx = int(parts[2])
+
+    q = AUDIT_QUESTIONS[audit['current']]
+    _, score = q['opts'][opt_idx]
+    audit['answers'].append({'cat': q['cat'], 'score': score, 'q_id': q_id})
+    audit['current'] += 1
+    context.user_data['audit'] = audit
+
+    if audit['current'] >= len(AUDIT_QUESTIONS):
+        await query.edit_message_text("🔍 Auswertung wird erstellt...")
+        await finish_audit(query.message, context)
+    else:
+        q_next = AUDIT_QUESTIONS[audit['current']]
+        keyboard = []
+        for i, (label, _) in enumerate(q_next['opts']):
+            keyboard.append([InlineKeyboardButton(label, callback_data=f"audit_{q_next['id']}_{i}")])
+
+        await query.edit_message_text(
+            f"📋 Security Audit - Frage {audit['current'] + 1}/{len(AUDIT_QUESTIONS)}\n"
+            f"Kategorie: {q_next['cat']}\n\n"
+            f"{q_next['q']}",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+
+async def finish_audit(message, context):
+    """Audit abschließen und Ergebnis anzeigen"""
+    audit = context.user_data.get('audit', {})
+    answers = audit.get('answers', [])
+    total = sum(a['score'] for a in answers)
+    grade, pct, desc = calculate_audit_grade(total)
+
+    weak = [a['cat'] for a in answers if a['score'] <= 1]
+    strong = [a['cat'] for a in answers if a['score'] >= 3]
+
+    lines = [
+        f"📊 Security Audit - Ergebnis\n",
+        f"Note: {grade} ({pct:.0f}%)",
+        f"{desc}\n",
+    ]
+    if strong:
+        lines.append(f"Stärken: {', '.join(strong)}")
+    if weak:
+        lines.append(f"Schwächen: {', '.join(weak)}")
+
+    # KI-Empfehlungen
+    if weak:
+        try:
+            prompt = f"User hat Security Audit Note {grade}. Schwächen: {', '.join(weak)}. Gib 3 priorisierte, konkrete Verbesserungen (je 1 Satz). Deutsch."
+            ai_msg = client.messages.create(
+                model='claude-haiku-4-5-20251001', max_tokens=512,
+                system="Du bist IT-Security Berater. Kurz, praktisch, konkret.",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            lines.append(f"\n🤖 Empfehlungen:\n{ai_msg.content[0].text}")
+        except Exception:
+            pass
+
+    await message.reply_text('\n'.join(lines))
+
+    # In DB speichern
+    user_id = context._user_id if hasattr(context, '_user_id') else None
+    if not user_id:
+        try:
+            user_id = message.chat.id
+        except Exception:
+            user_id = 0
+
+    conn = sqlite3.connect('/app/data/securebot.db')
+    c = conn.cursor()
+    c.execute(
+        'INSERT INTO security_audits (user_id, grade, score, max_score, answers) VALUES (?, ?, ?, ?, ?)',
+        (user_id, grade, total, 30, json.dumps(answers, ensure_ascii=False))
+    )
+    conn.commit()
+    conn.close()
+
+    context.user_data.pop('audit', None)
+
+
+# ========== FEATURE 3: INCIDENT RESPONSE ==========
+
+INCIDENT_TYPES = [
+    {'id': 'malware', 'label': 'Malware/Ransomware', 'emoji': '🦠'},
+    {'id': 'phishing_hit', 'label': 'Phishing-Link geklickt', 'emoji': '🎣'},
+    {'id': 'account_hack', 'label': 'Account gehackt', 'emoji': '🔓'},
+    {'id': 'data_breach', 'label': 'Datenleck', 'emoji': '📂'},
+    {'id': 'ddos', 'label': 'DDoS/Systemausfall', 'emoji': '💥'},
+    {'id': 'other', 'label': 'Sonstiger Vorfall', 'emoji': '⚠️'},
+]
+
+IR_PHASES = [
+    {'id': 'identify', 'name': 'Identifizieren', 'emoji': '🔍', 'desc': 'Was ist passiert? Umfang feststellen.'},
+    {'id': 'contain', 'name': 'Eindämmen', 'emoji': '🛑', 'desc': 'Sofortmaßnahmen: Schaden begrenzen.'},
+    {'id': 'eradicate', 'name': 'Beseitigen', 'emoji': '🧹', 'desc': 'Ursache entfernen, System bereinigen.'},
+    {'id': 'recover', 'name': 'Wiederherstellen', 'emoji': '🔄', 'desc': 'Normalbetrieb sicher wiederherstellen.'},
+    {'id': 'lessons', 'name': 'Lessons Learned', 'emoji': '📝', 'desc': 'Was lernen wir? Wie verhindern wir es?'},
+]
+
+IR_CHECKLISTS = {
+    'account_hack': {
+        'identify': ['Welche Konten sind betroffen?', 'Kannst du dich noch einloggen?', 'Verdächtige Login-Aktivitäten?'],
+        'contain': ['Passwort SOFORT ändern (sicheres Gerät!)', 'Alle Sessions beenden', '2FA aktivieren', 'Verbundene Apps prüfen'],
+        'eradicate': ['Gleiche Passwörter anderswo ändern', 'Gerät auf Malware scannen', 'E-Mail-Weiterleitungen prüfen'],
+        'recover': ['Passwort-Manager einrichten', '2FA mit Authenticator-App', 'Recovery-Codes sicher aufbewahren'],
+        'lessons': ['Wie kam es dazu?', 'Welche Daten betroffen?', 'DSGVO Meldepflicht prüfen (Art. 33/34)'],
+    },
+    'phishing_hit': {
+        'identify': ['Welchen Link hast du geklickt?', 'Hast du Daten eingegeben?', 'Welches Gerät betroffen?'],
+        'contain': ['Betroffene Passwörter SOFORT ändern', 'Bank kontaktieren (falls Finanzdaten)', 'Gerät vom Netz trennen wenn Malware vermutet'],
+        'eradicate': ['Vollständigen Virenscan durchführen', 'Browser-Cache und Cookies löschen', 'Verdächtige Browser-Extensions entfernen'],
+        'recover': ['Neue, einzigartige Passwörter setzen', '2FA überall aktivieren', 'Kontoauszüge prüfen'],
+        'lessons': ['Wie erkenne ich Phishing beim nächsten Mal?', 'URL immer prüfen vor Klick', 'Bei Unsicherheit: /check nutzen!'],
+    },
+    'malware': {
+        'identify': ['Welche Symptome? (Langsam, Pop-ups, verschlüsselte Dateien)', 'Wann begonnen?', 'Welche Geräte betroffen?'],
+        'contain': ['Gerät SOFORT vom Netzwerk trennen', 'Andere Geräte im Netzwerk prüfen', 'KEIN Lösegeld zahlen (Ransomware)'],
+        'eradicate': ['Virenscan mit aktuellem Scanner', 'Im abgesicherten Modus scannen', 'Bei Ransomware: Professionelle Hilfe'],
+        'recover': ['Backup einspielen (sauberes Backup!)', 'System-Updates durchführen', 'Alle Passwörter ändern'],
+        'lessons': ['Wie kam Malware aufs System?', '3-2-1 Backup-Strategie einrichten', 'Regelmäßige Updates automatisieren'],
+    },
+    'data_breach': {
+        'identify': ['Welche Daten sind betroffen?', 'Wie wurde das Leck entdeckt?', 'Wer hat Zugang?'],
+        'contain': ['Zugang sperren/einschränken', 'Betroffene Systeme isolieren', 'Beweise sichern (Logs!)'],
+        'eradicate': ['Sicherheitslücke schließen', 'Zugangsdaten rotieren', 'Systeme patchen'],
+        'recover': ['Monitoring verstärken', 'Betroffene informieren', 'Systeme schrittweise freigeben'],
+        'lessons': ['DSGVO Meldepflicht: 72h an Aufsichtsbehörde!', 'Welche Maßnahmen verhindern Wiederholung?', 'Verschlüsselung prüfen'],
+    },
+    'ddos': {
+        'identify': ['Welche Dienste sind betroffen?', 'Seit wann?', 'Traffic-Muster analysieren'],
+        'contain': ['CDN/DDoS-Schutz aktivieren', 'Rate-Limiting einrichten', 'ISP kontaktieren'],
+        'eradicate': ['Angriffsvektoren identifizieren', 'Firewall-Regeln anpassen', 'Ursprung ermitteln'],
+        'recover': ['Dienste schrittweise hochfahren', 'Monitoring intensivieren', 'DNS TTL prüfen'],
+        'lessons': ['DDoS-Schutz dauerhaft einrichten', 'Notfallplan dokumentieren', 'Redundanz aufbauen'],
+    },
+    'other': {
+        'identify': ['Was genau ist passiert?', 'Wann hast du es bemerkt?', 'Wer/was ist betroffen?'],
+        'contain': ['Betroffene Systeme isolieren', 'Beweise sichern', 'Team informieren'],
+        'eradicate': ['Ursache identifizieren', 'Schwachstelle schließen', 'Systeme bereinigen'],
+        'recover': ['Normalbetrieb herstellen', 'Monitoring einrichten', 'Dokumentation'],
+        'lessons': ['Was haben wir gelernt?', 'Wie verhindern wir es?', 'Prozesse anpassen'],
+    },
+}
+
+
+async def incident_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/incident - Incident Response Guide"""
+    user_id = update.effective_user.id
+    subscription = get_effective_subscription(user_id)
+
+    if subscription == 'free':
+        await update.message.reply_text(
+            "🚨 Der Incident Response Guide ist für Pro & Business verfügbar.\n\n/upgrade oder /trial für 7 Tage kostenlos!"
+        )
+        return
+
+    keyboard = []
+    for it in INCIDENT_TYPES:
+        keyboard.append([InlineKeyboardButton(f"{it['emoji']} {it['label']}", callback_data=f"ir_type_{it['id']}")])
+    keyboard.append([InlineKeyboardButton("❌ Abbrechen", callback_data="ir_cancel")])
+
+    await update.message.reply_text(
+        "🚨 Incident Response Guide\n\n"
+        "Was ist passiert?",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+async def handle_incident_callback(query, context):
+    """Verarbeitet IR-Button-Klicks"""
+    data = query.data
+
+    if data == 'ir_cancel':
+        context.user_data.pop('incident', None)
+        await query.edit_message_text("✅ Incident Response beendet.")
+        return
+
+    if data.startswith('ir_type_'):
+        inc_type = data.replace('ir_type_', '')
+        context.user_data['incident'] = {'active': True, 'type': inc_type, 'phase': 0}
+        await send_ir_phase(query, context)
+        return
+
+    if data == 'ir_next':
+        inc = context.user_data.get('incident', {})
+        inc['phase'] = inc.get('phase', 0) + 1
+        if inc['phase'] >= len(IR_PHASES):
+            context.user_data.pop('incident', None)
+            await query.edit_message_text(
+                "✅ Incident Response abgeschlossen!\n\n"
+                "Alle 5 Phasen durchlaufen. Dokumentiere den Vorfall und die Maßnahmen.\n"
+                "Bei weiteren Fragen stehe ich bereit."
+            )
+            # DB speichern
+            try:
+                conn = sqlite3.connect('/app/data/securebot.db')
+                c = conn.cursor()
+                c.execute(
+                    'INSERT INTO incident_responses (user_id, incident_type, phases_completed, completed) VALUES (?, ?, ?, 1)',
+                    (query.from_user.id, inc.get('type', 'other'), 5)
+                )
+                conn.commit()
+                conn.close()
+            except Exception:
+                pass
+            return
+        context.user_data['incident'] = inc
+        await send_ir_phase(query, context)
+        return
+
+    if data == 'ir_ask':
+        inc = context.user_data.get('incident', {})
+        inc['asking'] = True
+        context.user_data['incident'] = inc
+        phase = IR_PHASES[inc.get('phase', 0)]
+        await query.edit_message_text(
+            f"💬 Stelle deine Frage zur Phase '{phase['name']}'.\n"
+            f"Tippe /end um zum Guide zurückzukehren."
+        )
+        return
+
+
+async def send_ir_phase(query, context):
+    """Zeigt aktuelle IR-Phase mit Checkliste"""
+    inc = context.user_data.get('incident', {})
+    phase_idx = inc.get('phase', 0)
+    inc_type = inc.get('type', 'other')
+
+    phase = IR_PHASES[phase_idx]
+    checklist = IR_CHECKLISTS.get(inc_type, IR_CHECKLISTS['other']).get(phase['id'], [])
+
+    checklist_text = '\n'.join([f"  ▫️ {item}" for item in checklist])
+
+    keyboard = [
+        [InlineKeyboardButton("✅ Weiter zur nächsten Phase", callback_data="ir_next")],
+        [InlineKeyboardButton("💬 Frage zu dieser Phase", callback_data="ir_ask")],
+        [InlineKeyboardButton("❌ Abbrechen", callback_data="ir_cancel")],
+    ]
+
+    inc_label = next((t['emoji'] + ' ' + t['label'] for t in INCIDENT_TYPES if t['id'] == inc_type), inc_type)
+
+    await query.edit_message_text(
+        f"🚨 {inc_label}\n"
+        f"Phase {phase_idx + 1}/5: {phase['emoji']} {phase['name']}\n"
+        f"{phase['desc']}\n\n"
+        f"Checkliste:\n{checklist_text}",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+# ========== TELEGRAM HANDLERS ==========
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start Command"""
@@ -456,22 +1074,23 @@ Ich bin dein persönlicher AI Security Berater.
 • DSGVO & Compliance Orientierung
 • Security-Konzepte verstehen
 • Cloud Security Tipps
-• Und mehr!
+
+🛡️ **NEU: Phishing-Checker!**
+Sende einen verdächtigen Link und ich analysiere ihn sofort. Kostenlos!
+
+📋 **NEU: Security Audit** (/audit)
+10-Fragen-Check: Wie sicher bist du aufgestellt?
+
+🚨 **NEU: Incident Response** (/incident)
+Schritt-für-Schritt Hilfe bei Security-Vorfällen.
 
 **Dein Plan:** Free ({FREE_DAILY_LIMIT} Fragen/Tag)
 
-🎁 **Neu:** /trial für 7 Tage Pro kostenlos testen!
-
 💡 **Stell mir einfach eine Frage!**
 
-Beispiele:
-• "Wie sichere ich mein Heimnetzwerk?"
-• "Was sind die OWASP Top 10?"
-• "Erkläre mir SQL Injection"
-
 /help - Alle Befehle
-/upgrade - Mehr Fragen freischalten
-/status - Deinen Status anzeigen
+/trial - 7 Tage Pro kostenlos
+/upgrade - Mehr Features freischalten
 """
 
     await update.message.reply_text(welcome_text, parse_mode='Markdown')
@@ -485,20 +1104,23 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 **Befehle:**
 /start - Bot starten
 /help - Diese Hilfe
+/check - URL/E-Mail auf Phishing prüfen (kostenlos!)
+/audit - Security Audit Quick-Check (Pro/Business)
+/incident - Incident Response Guide (Pro/Business)
 /status - Dein Abo-Status
 /trial - 7 Tage Pro kostenlos testen
 /upgrade - Auf Pro upgraden
-/impressum - Impressum
-/agb - Nutzungsbedingungen
-/datenschutz - Datenschutzinfo
-/meinedaten - Meine gespeicherten Daten (DSGVO)
-/loeschen - Alle meine Daten löschen (DSGVO)
 /support - Hilfe & Support
-/end - Support beenden
+/end - Support/IR beenden
 /team - Team-Verwaltung (Business)
+/meinedaten - Gespeicherte Daten (DSGVO)
+/loeschen - Daten löschen (DSGVO)
+/impressum - Impressum
+/agb - AGB
+/datenschutz - Datenschutz
 
 **Nutzung:**
-Schreib mir einfach deine Security-Frage!
+Schreib mir eine Security-Frage oder sende einen verdächtigen Link!
 
 **Wobei ich helfe:**
 • Netzwerksicherheit verstehen
@@ -651,6 +1273,16 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_support_callback(query, context)
         return
 
+    # Audit Buttons
+    if query.data.startswith('audit_'):
+        await handle_audit_callback(query, context)
+        return
+
+    # Incident Response Buttons
+    if query.data.startswith('ir_'):
+        await handle_incident_callback(query, context)
+        return
+
     if query.data == 'upgrade_pro':
         await query.edit_message_text(
             "🚀 **Pro Plan - 9,99€/Monat**\n\n"
@@ -719,6 +1351,33 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Support-Modus aktiv? → an Support-Agent weiterleiten
     if await handle_support_message(update, context):
         return
+
+    # Incident Response Frage-Modus?
+    inc = context.user_data.get('incident', {})
+    if inc.get('active') and inc.get('asking'):
+        phase = IR_PHASES[inc.get('phase', 0)]
+        inc_type = inc.get('type', 'other')
+        inc['asking'] = False
+        context.user_data['incident'] = inc
+        thinking_msg = await update.message.reply_text("🔍 Analysiere...")
+        try:
+            ai_msg = client.messages.create(
+                model='claude-haiku-4-5-20251001', max_tokens=512,
+                system=f"Du bist ein Incident Response Spezialist. Vorfall: {inc_type}. Phase: {phase['name']} - {phase['desc']}. Antworte kontextbezogen, konkret, deutsch.",
+                messages=[{"role": "user", "content": question}]
+            )
+            await thinking_msg.edit_text(f"🚨 IR-Antwort ({phase['name']}):\n\n{ai_msg.content[0].text}\n\nTippe /end um zum Guide zurückzukehren.")
+        except Exception:
+            await thinking_msg.edit_text("Fehler bei der Verarbeitung. Tippe /end um zurückzukehren.")
+        return
+
+    # Auto-Phishing-Check: URL erkannt und keine Frage
+    urls_found = URL_PATTERN.findall(question)
+    if urls_found:
+        is_question = len(question) > 50 and any(w in question.lower() for w in QUESTION_WORDS)
+        if not is_question:
+            await handle_phishing_check(update, context, urls_found, question)
+            return
 
     # Check ob User den Bot nutzen darf
     can_use, message = can_use_bot(user_id)
@@ -923,6 +1582,9 @@ async def loeschen(update: Update, context: ContextTypes.DEFAULT_TYPE):
     c.execute('DELETE FROM usage WHERE user_id = ?', (user_id,))
     c.execute('DELETE FROM daily_usage WHERE user_id = ?', (user_id,))
     c.execute('DELETE FROM support_tickets WHERE user_id = ?', (user_id,))
+    c.execute('DELETE FROM phishing_checks WHERE user_id = ?', (user_id,))
+    c.execute('DELETE FROM security_audits WHERE user_id = ?', (user_id,))
+    c.execute('DELETE FROM incident_responses WHERE user_id = ?', (user_id,))
     c.execute('DELETE FROM team_members WHERE business_user_id = ? OR member_user_id = ?', (user_id, user_id))
     c.execute('DELETE FROM users WHERE user_id = ?', (user_id,))
 
@@ -990,10 +1652,12 @@ async def support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def end_support(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Support-Modus beenden"""
+    """Support/Audit/IR-Modus beenden"""
     context.user_data.pop('mode', None)
+    context.user_data.pop('audit', None)
+    context.user_data.pop('incident', None)
     await update.message.reply_text(
-        "✅ Support beendet. Du kannst mir wieder Security-Fragen stellen!",
+        "✅ Modus beendet. Du kannst mir wieder Security-Fragen stellen!",
         parse_mode='Markdown'
     )
 
@@ -1704,6 +2368,9 @@ def main():
     application.add_handler(CommandHandler("end", end_support))
     application.add_handler(CommandHandler("reply", admin_reply))
     application.add_handler(CommandHandler("team", team_command))
+    application.add_handler(CommandHandler("check", check_command))
+    application.add_handler(CommandHandler("audit", audit_command))
+    application.add_handler(CommandHandler("incident", incident_command))
     application.add_handler(CallbackQueryHandler(button_callback))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
