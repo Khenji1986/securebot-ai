@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureBot AI - Dein KI Security Berater</title>
-    <meta name="description" content="SecureBot AI - KI-gestützter IT-Security Berater auf Telegram. Cybersecurity Wissen, DSGVO Orientierung, Security Best Practices - sofort verfügbar.">
+    <title>SecureBot AI - Phishing erkennen. Sicherheit prüfen. Sofort.</title>
+    <meta name="description" content="Verdächtige Links prüfen, Security Audit durchführen, Notfall-Hilfe bei Hacks - kostenlos auf Telegram. Kein Login, kein neues Tool nötig.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -53,6 +53,11 @@
             color: #666;
             font-size: 0.9rem;
         }
+        .hero-tg {
+            margin-top: 6px;
+            color: #555;
+            font-size: 0.8rem;
+        }
 
         /* Steps */
         .steps {
@@ -85,38 +90,86 @@
         .step h3 { color: #fff; margin-bottom: 6px; }
         .step p { color: #999; font-size: 0.95rem; }
 
-        /* Features */
-        .features {
+        /* Tools */
+        .tools {
             padding: 60px 20px;
             background: #111;
         }
-        .features h2 {
+        .tools h2 {
             text-align: center;
             font-size: 1.8rem;
-            margin-bottom: 40px;
+            margin-bottom: 12px;
             color: #fff;
         }
-        .feature-grid {
+        .tools-sub {
+            text-align: center;
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 40px;
+        }
+        .tool-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 24px;
         }
-        .feature-card {
+        .tool-card {
             background: #1a1a1a;
             border: 1px solid #2a2a2a;
             border-radius: 12px;
-            padding: 24px;
+            padding: 28px 24px;
         }
-        .feature-card h3 {
+        .tool-card.free-tool { border-color: #00d4ff; }
+        .tool-emoji { font-size: 2rem; margin-bottom: 12px; }
+        .tool-card h3 {
             color: #00d4ff;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
+            margin-bottom: 4px;
+            font-size: 1.15rem;
         }
-        .feature-card p { color: #999; font-size: 0.95rem; }
+        .tool-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .badge-free { background: #00d4ff; color: #000; }
+        .badge-pro { background: #2a2a2a; color: #00d4ff; border: 1px solid #00d4ff; }
+        .tool-card p { color: #999; font-size: 0.95rem; line-height: 1.5; }
+
+        /* Wissen */
+        .wissen {
+            padding: 48px 20px;
+        }
+        .wissen h2 {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+        .wissen-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px 24px;
+            list-style: none;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .wissen-list li {
+            color: #999;
+            font-size: 0.9rem;
+        }
+        .wissen-list li::before {
+            content: '\2713 ';
+            color: #00d4ff;
+            font-weight: 700;
+        }
 
         /* Pricing */
         .pricing {
             padding: 60px 20px;
+            background: #111;
         }
         .pricing h2 {
             text-align: center;
@@ -175,6 +228,10 @@
             content: '\2713 ';
             color: #00d4ff;
             font-weight: 700;
+        }
+        .price-features li.highlight {
+            color: #fff;
+            font-weight: 600;
         }
         .price-btn {
             display: inline-block;
@@ -244,7 +301,6 @@
         .feedback {
             padding: 48px 20px;
             text-align: center;
-            background: #111;
         }
         .feedback h2 { color: #fff; font-size: 1.5rem; margin-bottom: 8px; }
         .feedback p { color: #999; font-size: 0.95rem; margin-bottom: 24px; }
@@ -288,10 +344,11 @@
 <!-- Hero -->
 <section class="hero">
     <div class="container">
-        <h1><span>SecureBot AI</span> - Dein KI Security Berater</h1>
-        <p>Cybersecurity Beratung rund um die Uhr. Direkt auf Telegram. Powered by Claude AI.</p>
-        <a href="https://t.me/Lees_Securebot" class="cta-btn">Jetzt kostenlos starten</a>
-        <p class="hero-sub">Keine Registrierung. 5 Fragen/Tag gratis.</p>
+        <h1><span>Phishing erkennen.</span> Sicherheit prüfen. Sofort.</h1>
+        <p>Verdächtigen Link erhalten? Weiterleiten, Risiko-Score erhalten. Dein Security-Berater - rund um die Uhr.</p>
+        <a href="https://t.me/Lees_Securebot" class="cta-btn">Kostenlos starten</a>
+        <p class="hero-sub">Kein Login. Kein neues Tool. Einfach lostippen.</p>
+        <p class="hero-tg">Läuft über Telegram - in 2 Minuten einsatzbereit.</p>
     </div>
 </section>
 
@@ -303,52 +360,64 @@
             <div class="step">
                 <div class="step-num">1</div>
                 <h3>Bot starten</h3>
-                <p>Klick auf den Telegram-Link. Keine Registrierung nötig.</p>
+                <p>Klick auf den Link. Telegram öffnet sich. Keine Registrierung.</p>
             </div>
             <div class="step">
                 <div class="step-num">2</div>
-                <h3>Frage stellen</h3>
-                <p>Schreib deine Security-Frage. Einfach lostippen.</p>
+                <h3>Link oder Frage senden</h3>
+                <p>Verdächtigen Link weiterleiten oder Security-Frage stellen.</p>
             </div>
             <div class="step">
                 <div class="step-num">3</div>
-                <h3>Antwort erhalten</h3>
-                <p>Sofort. Rund um die Uhr. Powered by KI.</p>
+                <h3>Sofort Ergebnis</h3>
+                <p>Risiko-Score, Antwort oder geführten Prozess erhalten.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Features -->
-<section class="features">
+<!-- Tools - Das Herzstück -->
+<section class="tools">
     <div class="container">
-        <h2>Wobei hilft SecureBot AI?</h2>
-        <div class="feature-grid">
-            <div class="feature-card">
-                <h3>Cybersecurity Wissen</h3>
-                <p>Fragen zu Netzwerksicherheit, Firewalls, VPN, IDS/IPS - verständlich erklärt.</p>
+        <h2>Das kann SecureBot AI</h2>
+        <p class="tools-sub">Echte Werkzeuge - nicht nur Fragen beantworten.</p>
+        <div class="tool-grid">
+            <div class="tool-card free-tool">
+                <div class="tool-emoji">&#x1F6E1;</div>
+                <h3>Phishing-Checker</h3>
+                <span class="tool-badge badge-free">KOSTENLOS</span>
+                <p>Verdächtigen Link senden - sofort Risiko-Score 1-10. Typosquatting, gefälschte Domains, Social Engineering erkennen.</p>
             </div>
-            <div class="feature-card">
-                <h3>DSGVO & Compliance</h3>
-                <p>Orientierung bei Datenschutz-Fragen, NIS2, ISO 27001. Keine Rechtsberatung.</p>
+            <div class="tool-card">
+                <div class="tool-emoji">&#x1F4CB;</div>
+                <h3>Security Audit</h3>
+                <span class="tool-badge badge-pro">PRO & BUSINESS</span>
+                <p>10 Fragen, 5 Minuten - deine persönliche Security-Note A-F. Mit KI-Empfehlungen für deine Schwachstellen.</p>
             </div>
-            <div class="feature-card">
-                <h3>Security-Konzepte</h3>
-                <p>OWASP Top 10, Schwachstellen verstehen, Ethical Hacking Grundlagen.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Wissen für den Ernstfall</h3>
-                <p>Incident Response Frameworks, Forensik-Grundlagen, Notfall-Checklisten.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Cloud Security</h3>
-                <p>Best Practices für AWS, Azure, GCP - Konfigurationstipps und häufige Fehler.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Sicherer Code</h3>
-                <p>Tipps gegen SQL Injection, XSS und Co. Lerne sicherere Software zu schreiben.</p>
+            <div class="tool-card">
+                <div class="tool-emoji">&#x1F6A8;</div>
+                <h3>Incident Response</h3>
+                <span class="tool-badge badge-pro">PRO & BUSINESS</span>
+                <p>Account gehackt? Malware entdeckt? Geführter Notfall-Prozess nach NIST-Framework. Schritt für Schritt.</p>
             </div>
         </div>
+    </div>
+</section>
+
+<!-- Wissen - kompakt -->
+<section class="wissen">
+    <div class="container">
+        <h2>Außerdem berät dich SecureBot AI zu</h2>
+        <ul class="wissen-list">
+            <li>Netzwerksicherheit</li>
+            <li>DSGVO & Compliance</li>
+            <li>OWASP Top 10</li>
+            <li>Cloud Security</li>
+            <li>Sicherer Code</li>
+            <li>Kryptographie</li>
+            <li>Social Engineering</li>
+            <li>Incident Response</li>
+        </ul>
     </div>
 </section>
 
@@ -366,9 +435,9 @@
                 <h3>Free</h3>
                 <div class="price-amount">0 EUR <span>/Monat</span></div>
                 <ul class="price-features">
+                    <li class="highlight">Phishing-Checker inklusive</li>
                     <li>5 Fragen pro Tag</li>
                     <li>Kompakte Antworten</li>
-                    <li>Alle Themen abgedeckt</li>
                 </ul>
                 <a href="https://t.me/Lees_Securebot" class="price-btn price-btn-free">Kostenlos starten</a>
             </div>
@@ -377,9 +446,10 @@
                 <div class="price-amount price-monthly">9,99 EUR <span>/Monat</span></div>
                 <div class="price-amount price-yearly" style="display:none;">99,90 EUR <span>/Jahr</span></div>
                 <ul class="price-features">
+                    <li class="highlight">Security Audit mit KI-Empfehlungen</li>
+                    <li class="highlight">Phishing KI-Tiefenanalyse</li>
                     <li>20 Fragen pro Tag</li>
                     <li>Ausführlichere Antworten</li>
-                    <li>Beispiele & Tool-Empfehlungen</li>
                     <li>Stärkeres KI-Modell</li>
                 </ul>
                 <a href="https://buy.stripe.com/cNi9AUekadJogJu5DggnK01" class="price-btn price-btn-pro price-monthly">Pro wählen</a>
@@ -390,11 +460,11 @@
                 <div class="price-amount price-monthly">29,99 EUR <span>/Monat</span></div>
                 <div class="price-amount price-yearly" style="display:none;">299,90 EUR <span>/Jahr</span></div>
                 <ul class="price-features">
+                    <li class="highlight">Alles aus Pro +</li>
+                    <li class="highlight">Incident Response Guide</li>
                     <li>30 Fragen pro Tag</li>
-                    <li>Maximale Antworttiefe mit Code-Beispielen</li>
+                    <li>Code-Beispiele & Anleitungen</li>
                     <li>Team-Zugang (bis 5 User)</li>
-                    <li>Hinweise zu ISO 27001, BSI, NIST</li>
-                    <li>Schritt-für-Schritt Anleitungen</li>
                 </ul>
                 <a href="https://buy.stripe.com/eVq8wQ0tk9t8eBm3v8gnK02" class="price-btn price-btn-biz price-monthly">Business wählen</a>
                 <a href="https://buy.stripe.com/fZu6oI3Fw9t8dxi3v8gnK04" class="price-btn price-btn-biz price-yearly" style="display:none;">Business wählen</a>
