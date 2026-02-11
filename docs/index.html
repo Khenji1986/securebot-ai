@@ -1042,10 +1042,10 @@ let counterStart = null;
 const counterEl = document.getElementById('attack-counter');
 function updateCounter(timestamp) {
     if (!counterStart) counterStart = timestamp;
-    // ~2,244 cyberattacks per day globally (Clark/Harer, Univ. of Maryland)
-    // = ~1 every 39 sec = ~0.026/sec; scaled for worldwide visual impact
+    // IBM X-Force: ~1.5M cyber incidents/day globally = ~17/sec
+    // Visual: ~2/sec for dramatic but believable pacing
     const elapsed = (timestamp - counterStart) / 1000;
-    const displayed = Math.floor(elapsed * 0.6);
+    const displayed = Math.floor(elapsed * 2);
     counterEl.textContent = displayed.toLocaleString();
     requestAnimationFrame(updateCounter);
 }
