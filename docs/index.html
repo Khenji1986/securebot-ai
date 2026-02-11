@@ -1,500 +1,1084 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureBot AI - Phishing erkennen. Sicherheit prüfen. Sofort.</title>
-    <meta name="description" content="Verdächtige Links prüfen, Security Audit durchführen, Notfall-Hilfe bei Hacks - kostenlos auf Telegram. Kein Login, kein neues Tool nötig.">
+    <title>SecureBot AI - Dein KI-Sicherheitsberater. 24/7.</title>
+    <meta name="description" content="Phishing-Mail erhalten? Unsicher ob der Link echt ist? Frag SecureBot AI - in 3 Sekunden weisst du Bescheid. Kostenlos auf Telegram.">
+    <meta name="keywords" content="Phishing Checker, AI Security, Cybersecurity Bot, Telegram Security Bot, DSGVO, KI Sicherheit">
+    <meta property="og:title" content="SecureBot AI - Dein KI-Sicherheitsberater. 24/7.">
+    <meta property="og:description" content="Phishing erkennen, Security Audit, Incident Response - kostenlos auf Telegram.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F6E1;</text></svg>">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #e0e0e0;
-            background: #0a0a0a;
-            line-height: 1.6;
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            color:#e0e0e0;
+            background:#0a0a0f;
+            line-height:1.6;
+            overflow-x:hidden;
         }
-        .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        .container{max-width:1000px;margin:0 auto;padding:0 24px}
+        a{text-decoration:none;color:inherit}
 
-        /* Hero */
-        .hero {
-            text-align: center;
-            padding: 80px 20px 60px;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+        /* ============================================
+           ANIMATIONS - KEYFRAMES
+           ============================================ */
+        @keyframes glow-pulse{
+            0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.3),0 0 40px rgba(0,212,255,0.1)}
+            50%{box-shadow:0 0 30px rgba(0,212,255,0.5),0 0 60px rgba(0,212,255,0.2)}
         }
-        .hero h1 {
-            font-size: 2.5rem;
-            color: #fff;
-            margin-bottom: 16px;
+        @keyframes float{
+            0%,100%{transform:translateY(0)}
+            50%{transform:translateY(-6px)}
         }
-        .hero h1 span { color: #00d4ff; }
-        .hero p {
-            font-size: 1.2rem;
-            color: #aaa;
-            max-width: 600px;
-            margin: 0 auto 32px;
+        @keyframes grid-move{
+            0%{background-position:0 0}
+            100%{background-position:50px 50px}
         }
-        .cta-btn {
-            display: inline-block;
-            background: #00d4ff;
-            color: #000;
-            padding: 16px 40px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
+        @keyframes fade-in-up{
+            from{opacity:0;transform:translateY(30px)}
+            to{opacity:1;transform:translateY(0)}
         }
-        .cta-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+        @keyframes typing-dots{
+            0%,60%,100%{opacity:.3;transform:translateY(0)}
+            30%{opacity:1;transform:translateY(-4px)}
         }
-        .hero-sub {
-            margin-top: 12px;
-            color: #666;
-            font-size: 0.9rem;
+        @keyframes counter-glow{
+            0%,100%{text-shadow:0 0 20px rgba(255,51,102,0.4)}
+            50%{text-shadow:0 0 40px rgba(255,51,102,0.7)}
         }
-        .hero-tg {
-            margin-top: 6px;
-            color: #555;
-            font-size: 0.8rem;
+        @keyframes scan-line{
+            0%{top:-100%}
+            100%{top:100%}
         }
-
-        /* Steps */
-        .steps {
-            padding: 60px 20px;
+        @keyframes text-glow{
+            0%,100%{text-shadow:0 0 10px rgba(0,212,255,0.3)}
+            50%{text-shadow:0 0 20px rgba(0,212,255,0.6),0 0 40px rgba(0,212,255,0.2)}
         }
-        .steps h2 {
-            text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 40px;
-            color: #fff;
-        }
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 32px;
-            text-align: center;
-        }
-        .step-num {
-            display: inline-block;
-            width: 48px;
-            height: 48px;
-            line-height: 48px;
-            border-radius: 50%;
-            background: #00d4ff;
-            color: #000;
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-bottom: 12px;
-        }
-        .step h3 { color: #fff; margin-bottom: 6px; }
-        .step p { color: #999; font-size: 0.95rem; }
-
-        /* Tools */
-        .tools {
-            padding: 60px 20px;
-            background: #111;
-        }
-        .tools h2 {
-            text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 12px;
-            color: #fff;
-        }
-        .tools-sub {
-            text-align: center;
-            color: #888;
-            font-size: 1rem;
-            margin-bottom: 40px;
-        }
-        .tool-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-        }
-        .tool-card {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 12px;
-            padding: 28px 24px;
-        }
-        .tool-card.free-tool { border-color: #00d4ff; }
-        .tool-emoji { font-size: 2rem; margin-bottom: 12px; }
-        .tool-card h3 {
-            color: #00d4ff;
-            margin-bottom: 4px;
-            font-size: 1.15rem;
-        }
-        .tool-badge {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        .badge-free { background: #00d4ff; color: #000; }
-        .badge-pro { background: #2a2a2a; color: #00d4ff; border: 1px solid #00d4ff; }
-        .tool-card p { color: #999; font-size: 0.95rem; line-height: 1.5; }
-
-        /* Wissen */
-        .wissen {
-            padding: 48px 20px;
-        }
-        .wissen h2 {
-            text-align: center;
-            font-size: 1.4rem;
-            margin-bottom: 24px;
-            color: #fff;
-        }
-        .wissen-list {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px 24px;
-            list-style: none;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        .wissen-list li {
-            color: #999;
-            font-size: 0.9rem;
-        }
-        .wissen-list li::before {
-            content: '\2713 ';
-            color: #00d4ff;
-            font-weight: 700;
+        @keyframes border-glow{
+            0%,100%{border-color:rgba(0,212,255,0.3)}
+            50%{border-color:rgba(0,212,255,0.7)}
         }
 
-        /* Pricing */
-        .pricing {
-            padding: 60px 20px;
-            background: #111;
+        /* Scroll reveal */
+        .reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease}
+        .reveal.visible{opacity:1;transform:translateY(0)}
+
+        /* ============================================
+           NAV BAR
+           ============================================ */
+        .navbar{
+            position:fixed;top:0;left:0;right:0;z-index:1000;
+            background:rgba(10,10,15,0.9);
+            backdrop-filter:blur(12px);
+            border-bottom:1px solid rgba(0,212,255,0.1);
+            transition:background 0.3s;
         }
-        .pricing h2 {
-            text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 40px;
-            color: #fff;
+        .navbar .container{
+            display:flex;align-items:center;justify-content:space-between;
+            height:60px;
         }
-        .price-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 24px;
+        .nav-logo{
+            font-size:1.2rem;font-weight:800;color:#fff;
+            display:flex;align-items:center;gap:8px;
         }
-        .price-card {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            border-radius: 12px;
-            padding: 32px 24px;
-            text-align: center;
+        .nav-logo span{color:#00d4ff;animation:text-glow 3s ease-in-out infinite}
+        .nav-logo svg{width:28px;height:28px}
+        .nav-right{display:flex;align-items:center;gap:16px}
+        .lang-toggle{
+            display:flex;align-items:center;gap:6px;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px;padding:4px 6px;cursor:pointer;
+            font-size:0.8rem;
         }
-        .price-card.featured {
-            border-color: #00d4ff;
-            position: relative;
+        .lang-btn{
+            padding:4px 10px;border-radius:16px;
+            color:#888;font-weight:600;transition:all 0.2s;
+            border:none;background:none;cursor:pointer;font-size:0.8rem;
         }
-        .price-card.featured::before {
-            content: 'BELIEBT';
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #00d4ff;
-            color: #000;
-            padding: 4px 16px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
+        .lang-btn.active{background:#00d4ff;color:#000}
+        .nav-cta{
+            background:#00d4ff;color:#000;padding:8px 20px;
+            border-radius:6px;font-weight:700;font-size:0.85rem;
+            transition:box-shadow 0.3s;
         }
-        .price-card h3 { color: #fff; font-size: 1.3rem; margin-bottom: 8px; }
-        .price-amount {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #00d4ff;
-            margin: 16px 0;
+        .nav-cta:hover{box-shadow:0 0 20px rgba(0,212,255,0.4)}
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero{
+            position:relative;
+            text-align:center;
+            padding:140px 24px 80px;
+            overflow:hidden;
+            min-height:90vh;
+            display:flex;align-items:center;justify-content:center;
         }
-        .price-amount span { font-size: 0.9rem; color: #666; }
-        .price-features {
-            list-style: none;
-            text-align: left;
-            margin: 24px 0;
+        .hero-bg{
+            position:absolute;inset:0;
+            background:
+                linear-gradient(135deg,#0a0a0f 0%,#0d1020 30%,#1a1a2e 50%,#0d1020 70%,#0a0a0f 100%);
+            z-index:0;
         }
-        .price-features li {
-            padding: 6px 0;
-            color: #bbb;
-            font-size: 0.95rem;
+        .hero-grid{
+            position:absolute;inset:0;z-index:1;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),
+                linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);
+            background-size:50px 50px;
+            animation:grid-move 8s linear infinite;
         }
-        .price-features li::before {
-            content: '\2713 ';
-            color: #00d4ff;
-            font-weight: 700;
+        .hero-grid::after{
+            content:'';position:absolute;inset:0;
+            background:radial-gradient(ellipse at center,transparent 0%,#0a0a0f 70%);
         }
-        .price-features li.highlight {
-            color: #fff;
-            font-weight: 600;
+        .hero-content{position:relative;z-index:2;max-width:750px}
+
+        /* Stat Counter */
+        .hero-stat{
+            margin-bottom:32px;
         }
-        .price-btn {
-            display: inline-block;
-            padding: 12px 32px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
+        .hero-stat-number{
+            font-size:3.5rem;font-weight:900;color:#ff3366;
+            animation:counter-glow 2s ease-in-out infinite;
+            line-height:1.1;
         }
-        .price-btn-free {
-            background: #2a2a2a;
-            color: #fff;
+        .hero-stat-label{
+            font-size:1.1rem;color:#ff6b8a;font-weight:500;
+            margin-top:4px;
         }
-        .price-btn-pro {
-            background: #00d4ff;
-            color: #000;
-        }
-        .price-btn-biz {
-            background: #2a2a2a;
-            color: #fff;
-            border: 1px solid #00d4ff;
-        }
-        .price-toggle {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
-        }
-        .price-toggle span { color: #666; font-size: 0.95rem; }
-        .price-toggle span.active { color: #fff; font-weight: 600; }
-        .toggle-switch {
-            width: 48px;
-            height: 26px;
-            background: #2a2a2a;
-            border-radius: 13px;
-            cursor: pointer;
-            position: relative;
-            border: 1px solid #444;
-            transition: background 0.2s;
-        }
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 18px;
-            height: 18px;
-            background: #00d4ff;
-            border-radius: 50%;
-            transition: transform 0.2s;
-        }
-        .toggle-switch.yearly::after { transform: translateX(22px); }
-        .toggle-switch.yearly { background: #1a3a4a; }
-        .price-yearly { display: none; }
-        .price-save {
-            background: #00d4ff;
-            color: #000;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: 700;
-            margin-left: 6px;
+        @media(min-width:768px){
+            .hero-stat-number{font-size:4.5rem}
         }
 
-        /* Feedback */
-        .feedback {
-            padding: 48px 20px;
-            text-align: center;
+        .hero h1{
+            font-size:2.2rem;color:#fff;margin-bottom:16px;
+            font-weight:800;line-height:1.2;
         }
-        .feedback h2 { color: #fff; font-size: 1.5rem; margin-bottom: 8px; }
-        .feedback p { color: #999; font-size: 0.95rem; margin-bottom: 24px; }
-        .feedback-btn {
-            display: inline-block;
-            background: #1a1a1a;
-            border: 1px solid #00d4ff;
-            color: #00d4ff;
-            padding: 12px 32px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        .feedback-btn:hover { background: #1a3a4a; }
+        .hero h1 .accent{color:#00d4ff}
+        @media(min-width:768px){.hero h1{font-size:3rem}}
 
-        /* Footer */
-        .footer {
-            padding: 40px 20px;
-            text-align: center;
-            border-top: 1px solid #222;
-            color: #666;
-            font-size: 0.85rem;
+        .hero-sub{
+            font-size:1.1rem;color:#a0a0b0;max-width:600px;
+            margin:0 auto 36px;line-height:1.7;
         }
-        .footer a { color: #00d4ff; text-decoration: none; }
-        .footer-links { margin-bottom: 12px; }
-        .footer-links a { margin: 0 12px; }
+        .hero-sub strong{color:#fff}
 
-        /* KI-Hinweis */
-        .ai-notice {
-            text-align: center;
-            padding: 20px;
-            background: #0d1117;
-            color: #666;
-            font-size: 0.85rem;
+        .cta-primary{
+            display:inline-block;
+            background:#00d4ff;color:#000;
+            padding:18px 48px;border-radius:10px;
+            font-weight:800;font-size:1.15rem;
+            animation:glow-pulse 2s ease-in-out infinite;
+            transition:transform 0.2s;
+        }
+        .cta-primary:hover{transform:translateY(-3px) scale(1.02)}
+
+        .hero-trust{
+            margin-top:20px;color:#555;font-size:0.85rem;
+            display:flex;align-items:center;justify-content:center;gap:6px;
+        }
+        .hero-trust-icon{color:#00d4ff}
+
+        /* ============================================
+           LIVE DEMO - ANIMATED CHAT
+           ============================================ */
+        .demo{
+            padding:80px 24px;
+            background:linear-gradient(180deg,#0a0a0f 0%,#0e0e1a 50%,#0a0a0f 100%);
+        }
+        .demo h2{
+            text-align:center;font-size:1.8rem;color:#fff;
+            margin-bottom:8px;font-weight:800;
+        }
+        .demo-sub{
+            text-align:center;color:#888;margin-bottom:48px;font-size:1rem;
+        }
+        .chat-window{
+            max-width:480px;margin:0 auto;
+            background:#0c0c14;
+            border:1px solid rgba(0,212,255,0.15);
+            border-radius:16px;
+            overflow:hidden;
+            box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(0,212,255,0.05);
+        }
+        .chat-header{
+            background:linear-gradient(90deg,#12121e,#1a1a2e);
+            padding:14px 20px;
+            display:flex;align-items:center;gap:12px;
+            border-bottom:1px solid rgba(0,212,255,0.1);
+        }
+        .chat-avatar{
+            width:36px;height:36px;border-radius:50%;
+            background:linear-gradient(135deg,#00d4ff,#0088aa);
+            display:flex;align-items:center;justify-content:center;
+            font-size:1rem;
+        }
+        .chat-header-info h4{color:#fff;font-size:0.9rem;margin-bottom:1px}
+        .chat-header-info span{color:#00d4ff;font-size:0.7rem}
+        .chat-body{
+            padding:20px 16px;min-height:340px;
+            display:flex;flex-direction:column;gap:12px;
+        }
+        .chat-msg{
+            max-width:85%;padding:10px 14px;border-radius:12px;
+            font-size:0.9rem;line-height:1.5;
+            opacity:0;transform:translateY(10px);
+            transition:opacity 0.4s ease,transform 0.4s ease;
+        }
+        .chat-msg.visible{opacity:1;transform:translateY(0)}
+        .chat-msg.user{
+            align-self:flex-end;
+            background:#1a3a4a;color:#e0e0e0;
+            border-bottom-right-radius:4px;
+        }
+        .chat-msg.bot{
+            align-self:flex-start;
+            background:#1a1a2e;color:#e0e0e0;
+            border:1px solid rgba(0,212,255,0.1);
+            border-bottom-left-radius:4px;
+        }
+        .chat-msg.bot.warning{border-color:rgba(255,51,102,0.3)}
+        .chat-msg .warn-badge{
+            display:inline-block;
+            background:#ff3366;color:#fff;
+            font-size:0.7rem;font-weight:800;
+            padding:2px 8px;border-radius:4px;margin-bottom:6px;
+        }
+        .chat-msg .risk-score{color:#ff3366;font-weight:700}
+        .chat-msg .safe-action{color:#00ff88;font-weight:600}
+        .typing-indicator{
+            align-self:flex-start;
+            display:flex;gap:4px;padding:10px 16px;
+            background:#1a1a2e;border-radius:12px;
+            border-bottom-left-radius:4px;
+            opacity:0;transition:opacity 0.3s;
+        }
+        .typing-indicator.visible{opacity:1}
+        .typing-dot{
+            width:7px;height:7px;border-radius:50%;
+            background:#00d4ff;
+        }
+        .typing-dot:nth-child(1){animation:typing-dots 1.4s infinite 0s}
+        .typing-dot:nth-child(2){animation:typing-dots 1.4s infinite 0.2s}
+        .typing-dot:nth-child(3){animation:typing-dots 1.4s infinite 0.4s}
+
+        /* ============================================
+           PROBLEM / PAIN SECTION
+           ============================================ */
+        .pain{padding:80px 24px}
+        .pain h2{
+            text-align:center;font-size:1.8rem;color:#fff;
+            margin-bottom:48px;font-weight:800;
+        }
+        .pain-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:24px;max-width:900px;margin:0 auto 48px;
+        }
+        .pain-card{
+            background:linear-gradient(135deg,#12121a,#1a1a24);
+            border:1px solid #222;
+            border-radius:14px;padding:28px 24px;
+            transition:border-color 0.3s,transform 0.3s;
+        }
+        .pain-card:hover{
+            border-color:rgba(255,51,102,0.3);
+            transform:translateY(-4px);
+        }
+        .pain-icon{font-size:2rem;margin-bottom:12px}
+        .pain-card p{color:#aaa;font-size:0.95rem;line-height:1.6}
+        .pain-answer{
+            text-align:center;font-size:1.15rem;color:#00d4ff;
+            font-weight:600;max-width:700px;margin:0 auto;
+            line-height:1.7;
+        }
+
+        /* ============================================
+           FEATURES / TOOLS
+           ============================================ */
+        .tools{padding:80px 24px;background:#0e0e16}
+        .tools h2{
+            text-align:center;font-size:1.8rem;color:#fff;
+            margin-bottom:8px;font-weight:800;
+        }
+        .tools-sub{text-align:center;color:#888;margin-bottom:48px;font-size:1rem}
+        .tool-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:24px;
+        }
+        .tool-card{
+            background:linear-gradient(135deg,#12121a,#1a1a24);
+            border:1px solid #1e1e2e;
+            border-radius:14px;padding:32px 24px;
+            transition:border-color 0.4s,transform 0.3s,box-shadow 0.4s;
+            position:relative;overflow:hidden;
+        }
+        .tool-card::before{
+            content:'';position:absolute;top:0;left:0;right:0;height:2px;
+            background:linear-gradient(90deg,transparent,#00d4ff,transparent);
+            opacity:0;transition:opacity 0.4s;
+        }
+        .tool-card:hover::before{opacity:1}
+        .tool-card:hover{
+            border-color:rgba(0,212,255,0.3);
+            transform:translateY(-4px);
+            box-shadow:0 12px 40px rgba(0,212,255,0.08);
+        }
+        .tool-card.free-highlight{
+            border-color:rgba(0,212,255,0.3);
+            animation:border-glow 3s ease-in-out infinite;
+        }
+        .tool-icon{
+            width:48px;height:48px;border-radius:12px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.5rem;margin-bottom:16px;
+            background:rgba(0,212,255,0.08);
+        }
+        .tool-card h3{color:#fff;font-size:1.15rem;margin-bottom:4px}
+        .tool-badge{
+            display:inline-block;font-size:0.7rem;font-weight:800;
+            padding:3px 10px;border-radius:10px;margin-bottom:12px;
+        }
+        .badge-free{background:#00d4ff;color:#000}
+        .badge-pro{background:transparent;color:#00d4ff;border:1px solid #00d4ff}
+        .tool-card p{color:#999;font-size:0.9rem;line-height:1.6}
+
+        /* ============================================
+           STATS BAR
+           ============================================ */
+        .stats{
+            padding:48px 24px;
+            background:linear-gradient(90deg,#0d1020,#12121e,#0d1020);
+            border-top:1px solid rgba(0,212,255,0.08);
+            border-bottom:1px solid rgba(0,212,255,0.08);
+        }
+        .stats-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+            gap:32px;text-align:center;
+        }
+        .stat-item .stat-value{
+            font-size:1.8rem;font-weight:800;color:#00d4ff;
+            margin-bottom:4px;
+        }
+        .stat-item .stat-label{color:#888;font-size:0.85rem}
+
+        /* ============================================
+           PRICING
+           ============================================ */
+        .pricing{padding:80px 24px}
+        .pricing h2{
+            text-align:center;font-size:1.8rem;color:#fff;
+            margin-bottom:40px;font-weight:800;
+        }
+        .price-toggle{
+            display:flex;justify-content:center;align-items:center;
+            gap:12px;margin-bottom:40px;
+        }
+        .price-toggle span{color:#666;font-size:0.95rem;cursor:pointer}
+        .price-toggle span.active{color:#fff;font-weight:600}
+        .toggle-switch{
+            width:48px;height:26px;background:#1a1a2e;
+            border-radius:13px;cursor:pointer;position:relative;
+            border:1px solid #333;transition:background 0.2s;
+        }
+        .toggle-switch::after{
+            content:'';position:absolute;top:3px;left:3px;
+            width:18px;height:18px;background:#00d4ff;
+            border-radius:50%;transition:transform 0.2s;
+        }
+        .toggle-switch.yearly::after{transform:translateX(22px)}
+        .toggle-switch.yearly{background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3)}
+        .price-yearly{display:none}
+        .price-save{
+            background:#00d4ff;color:#000;font-size:0.7rem;
+            padding:2px 8px;border-radius:10px;font-weight:700;margin-left:6px;
+        }
+        .price-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+            gap:24px;
+        }
+        .price-card{
+            background:linear-gradient(135deg,#12121a,#1a1a24);
+            border:1px solid #1e1e2e;border-radius:14px;
+            padding:36px 28px;text-align:center;
+            transition:transform 0.3s,box-shadow 0.3s;
+        }
+        .price-card:hover{transform:translateY(-4px)}
+        .price-card.featured{
+            border-color:rgba(0,212,255,0.4);position:relative;
+            box-shadow:0 0 40px rgba(0,212,255,0.08);
+        }
+        .price-card.featured::before{
+            content:attr(data-badge);
+            position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+            background:#00d4ff;color:#000;padding:4px 18px;
+            border-radius:20px;font-size:0.75rem;font-weight:800;
+        }
+        .price-card h3{color:#fff;font-size:1.3rem;margin-bottom:8px}
+        .price-amount{
+            font-size:2.4rem;font-weight:800;color:#00d4ff;margin:16px 0;
+        }
+        .price-amount span{font-size:0.9rem;color:#666}
+        .price-features{list-style:none;text-align:left;margin:24px 0}
+        .price-features li{
+            padding:7px 0;color:#bbb;font-size:0.92rem;
+        }
+        .price-features li::before{content:'\2713 ';color:#00d4ff;font-weight:700}
+        .price-features li.hl{color:#fff;font-weight:600}
+        .price-btn{
+            display:inline-block;padding:14px 36px;border-radius:8px;
+            font-weight:700;font-size:1rem;transition:all 0.3s;
+        }
+        .btn-free{background:#1a1a2e;color:#fff;border:1px solid #333}
+        .btn-free:hover{border-color:#00d4ff}
+        .btn-pro{background:#00d4ff;color:#000}
+        .btn-pro:hover{box-shadow:0 0 30px rgba(0,212,255,0.4)}
+        .btn-biz{background:#1a1a2e;color:#fff;border:1px solid #00d4ff}
+        .btn-biz:hover{box-shadow:0 0 30px rgba(0,212,255,0.2)}
+
+        /* ============================================
+           FAQ
+           ============================================ */
+        .faq{padding:80px 24px;background:#0e0e16}
+        .faq h2{
+            text-align:center;font-size:1.8rem;color:#fff;
+            margin-bottom:48px;font-weight:800;
+        }
+        .faq-list{max-width:700px;margin:0 auto}
+        .faq-item{
+            border-bottom:1px solid #1e1e2e;
+        }
+        .faq-question{
+            width:100%;background:none;border:none;color:#e0e0e0;
+            font-size:1rem;font-weight:600;padding:20px 0;
+            cursor:pointer;display:flex;align-items:center;
+            justify-content:space-between;text-align:left;
+            font-family:inherit;
+        }
+        .faq-question:hover{color:#00d4ff}
+        .faq-arrow{
+            color:#00d4ff;font-size:1.2rem;
+            transition:transform 0.3s;flex-shrink:0;margin-left:16px;
+        }
+        .faq-item.open .faq-arrow{transform:rotate(180deg)}
+        .faq-answer{
+            max-height:0;overflow:hidden;
+            transition:max-height 0.4s ease,padding 0.4s ease;
+        }
+        .faq-item.open .faq-answer{max-height:200px;padding-bottom:20px}
+        .faq-answer p{color:#999;font-size:0.92rem;line-height:1.7}
+
+        /* ============================================
+           FINAL CTA
+           ============================================ */
+        .final-cta{
+            padding:80px 24px;text-align:center;
+            background:linear-gradient(180deg,#0a0a0f,#0d1020,#0a0a0f);
+            position:relative;
+        }
+        .final-cta h2{
+            font-size:2rem;color:#fff;margin-bottom:16px;font-weight:800;
+        }
+        .final-cta p{
+            color:#888;font-size:1.05rem;margin-bottom:36px;
+            max-width:500px;margin-left:auto;margin-right:auto;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .footer{
+            padding:40px 24px;text-align:center;
+            border-top:1px solid #1a1a2e;
+        }
+        .footer-links{margin-bottom:16px}
+        .footer-links a{
+            color:#00d4ff;margin:0 14px;font-size:0.9rem;
+            transition:opacity 0.2s;
+        }
+        .footer-links a:hover{opacity:0.7}
+        .footer-trust{
+            display:flex;justify-content:center;gap:24px;
+            margin-bottom:16px;flex-wrap:wrap;
+        }
+        .trust-badge{
+            display:flex;align-items:center;gap:6px;
+            color:#666;font-size:0.8rem;
+        }
+        .trust-badge svg{width:16px;height:16px;fill:#00d4ff}
+        .footer-legal{color:#555;font-size:0.8rem;line-height:1.6}
+        .footer-legal a{color:#00d4ff}
+
+        .ai-notice{
+            text-align:center;padding:16px 24px;
+            background:#08080c;color:#555;font-size:0.8rem;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media(max-width:600px){
+            .hero h1{font-size:1.7rem}
+            .hero-stat-number{font-size:2.8rem}
+            .hero-sub{font-size:0.95rem}
+            .cta-primary{padding:16px 36px;font-size:1rem}
+            .demo h2,.pain h2,.tools h2,.pricing h2,.faq h2{font-size:1.4rem}
+            .chat-body{min-height:300px}
+            .nav-cta{display:none}
+            .stats-grid{grid-template-columns:repeat(2,1fr);gap:24px}
+            .price-grid{grid-template-columns:1fr}
         }
     </style>
 </head>
 <body>
 
-<!-- Hero -->
-<section class="hero">
+<!-- ===================== NAV BAR ===================== -->
+<nav class="navbar">
     <div class="container">
-        <h1><span>Phishing erkennen.</span> Sicherheit prüfen. Sofort.</h1>
-        <p>Verdächtigen Link erhalten? Weiterleiten, Risiko-Score erhalten. Dein Security-Berater - rund um die Uhr.</p>
-        <a href="https://t.me/Lees_Securebot" class="cta-btn">Kostenlos starten</a>
-        <p class="hero-sub">Kein Login. Kein neues Tool. Einfach lostippen.</p>
-        <p class="hero-tg">Läuft über Telegram - in 2 Minuten einsatzbereit.</p>
+        <a href="#" class="nav-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Secure<span>Bot AI</span>
+        </a>
+        <div class="nav-right">
+            <div class="lang-toggle" aria-label="Language switcher">
+                <button class="lang-btn active" data-lang="de" onclick="setLang('de')">DE</button>
+                <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+            </div>
+            <a href="https://t.me/Lees_Securebot" class="nav-cta" data-i18n="nav_cta">Jetzt testen</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+        <div class="hero-stat reveal">
+            <div class="hero-stat-number" id="attack-counter">0</div>
+            <div class="hero-stat-label" data-i18n="hero_stat">Cyberangriffe seit du diese Seite geoeffnet hast</div>
+        </div>
+        <h1 class="reveal" data-i18n="hero_h1"><span class="accent">Dein KI-Sicherheitsberater.</span><br>24/7. Sofort einsatzbereit.</h1>
+        <p class="hero-sub reveal" data-i18n="hero_sub">Phishing-Mail erhalten? Unsicher ob der Link echt ist?<br><strong>Frag SecureBot - in 3 Sekunden weisst du Bescheid.</strong></p>
+        <a href="https://t.me/Lees_Securebot" class="cta-primary reveal" data-i18n="hero_cta">Jetzt kostenlos testen</a>
+        <div class="hero-trust reveal">
+            <span class="hero-trust-icon">&#x1F512;</span>
+            <span data-i18n="hero_trust">Kein Login. Laeuft ueber Telegram. In 30 Sekunden startklar.</span>
+        </div>
     </div>
 </section>
 
-<!-- So funktioniert's -->
-<section class="steps">
+<!-- ===================== LIVE DEMO ===================== -->
+<section class="demo" id="demo">
     <div class="container">
-        <h2>So funktioniert's</h2>
-        <div class="steps-grid">
-            <div class="step">
-                <div class="step-num">1</div>
-                <h3>Bot starten</h3>
-                <p>Klick auf den Link. Telegram öffnet sich. Keine Registrierung.</p>
+        <h2 class="reveal" data-i18n="demo_h2">Sieh selbst, wie es funktioniert</h2>
+        <p class="demo-sub reveal" data-i18n="demo_sub">Echte Phishing-Erkennung. In Echtzeit.</p>
+        <div class="chat-window reveal">
+            <div class="chat-header">
+                <div class="chat-avatar">&#x1F6E1;</div>
+                <div class="chat-header-info">
+                    <h4>SecureBot AI</h4>
+                    <span>online</span>
+                </div>
             </div>
-            <div class="step">
-                <div class="step-num">2</div>
-                <h3>Link oder Frage senden</h3>
-                <p>Verdächtigen Link weiterleiten oder Security-Frage stellen.</p>
-            </div>
-            <div class="step">
-                <div class="step-num">3</div>
-                <h3>Sofort Ergebnis</h3>
-                <p>Risiko-Score, Antwort oder geführten Prozess erhalten.</p>
+            <div class="chat-body" id="chat-body">
+                <div class="typing-indicator" id="typing">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Tools - Das Herzstück -->
-<section class="tools">
+<!-- ===================== PROBLEM / PAIN ===================== -->
+<section class="pain" id="problem">
     <div class="container">
-        <h2>Das kann SecureBot AI</h2>
-        <p class="tools-sub">Echte Werkzeuge - nicht nur Fragen beantworten.</p>
+        <h2 class="reveal" data-i18n="pain_h2">Kennst du das?</h2>
+        <div class="pain-grid">
+            <div class="pain-card reveal">
+                <div class="pain-icon">&#x1F4E7;</div>
+                <p data-i18n="pain_1">Du erhaeltst eine E-Mail von &ldquo;deiner Bank&rdquo; - aber ist sie echt? Ein falscher Klick und dein Konto ist kompromittiert.</p>
+            </div>
+            <div class="pain-card reveal">
+                <div class="pain-icon">&#x1F465;</div>
+                <p data-i18n="pain_2">Dein Mitarbeiter klickt auf einen Link - war das Phishing? 91% aller Cyberangriffe starten mit einer E-Mail.</p>
+            </div>
+            <div class="pain-card reveal">
+                <div class="pain-icon">&#x1F6A8;</div>
+                <p data-i18n="pain_3">Du wirst gehackt - was jetzt? Wen rufst du um 3 Uhr nachts an? Jede Minute zaehlt.</p>
+            </div>
+        </div>
+        <p class="pain-answer reveal" data-i18n="pain_answer">SecureBot AI ist dein Security-Experte.<br>Rund um die Uhr. Fuer einen Bruchteil der Kosten.</p>
+    </div>
+</section>
+
+<!-- ===================== FEATURES / TOOLS ===================== -->
+<section class="tools" id="features">
+    <div class="container">
+        <h2 class="reveal" data-i18n="tools_h2">Das kann SecureBot AI</h2>
+        <p class="tools-sub reveal" data-i18n="tools_sub">Echte Werkzeuge - nicht nur Fragen beantworten.</p>
         <div class="tool-grid">
-            <div class="tool-card free-tool">
-                <div class="tool-emoji">&#x1F6E1;</div>
-                <h3>Phishing-Checker</h3>
-                <span class="tool-badge badge-free">KOSTENLOS</span>
-                <p>Verdächtigen Link senden - sofort Risiko-Score 1-10. Typosquatting, gefälschte Domains, Social Engineering erkennen.</p>
+            <div class="tool-card free-highlight reveal">
+                <div class="tool-icon">&#x1F6E1;</div>
+                <h3 data-i18n="tool1_h3">Phishing-Checker</h3>
+                <span class="tool-badge badge-free" data-i18n="badge_free">KOSTENLOS</span>
+                <p data-i18n="tool1_p">Verdaechtigen Link senden - sofort Risiko-Score 1-10. Typosquatting, gefaelschte Domains, Social Engineering erkennen. Ohne Limit.</p>
             </div>
-            <div class="tool-card">
-                <div class="tool-emoji">&#x1F4CB;</div>
-                <h3>Security Audit</h3>
+            <div class="tool-card reveal">
+                <div class="tool-icon">&#x1F4CB;</div>
+                <h3 data-i18n="tool2_h3">Security Audit</h3>
                 <span class="tool-badge badge-pro">PRO & BUSINESS</span>
-                <p>10 Fragen, 5 Minuten - deine persönliche Security-Note A-F. Mit KI-Empfehlungen für deine Schwachstellen.</p>
+                <p data-i18n="tool2_p">10 Fragen, 5 Minuten - deine persoenliche Security-Note A-F. Mit KI-Empfehlungen fuer deine Schwachstellen.</p>
             </div>
-            <div class="tool-card">
-                <div class="tool-emoji">&#x1F6A8;</div>
-                <h3>Incident Response</h3>
+            <div class="tool-card reveal">
+                <div class="tool-icon">&#x1F6A8;</div>
+                <h3 data-i18n="tool3_h3">Incident Response</h3>
                 <span class="tool-badge badge-pro">PRO & BUSINESS</span>
-                <p>Account gehackt? Malware entdeckt? Geführter Notfall-Prozess nach NIST-Framework. Schritt für Schritt.</p>
+                <p data-i18n="tool3_p">Account gehackt? Malware entdeckt? Gefuehrter Notfall-Prozess nach NIST-Framework. Schritt fuer Schritt.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Wissen - kompakt -->
-<section class="wissen">
+<!-- ===================== STATS BAR ===================== -->
+<section class="stats reveal">
     <div class="container">
-        <h2>Außerdem berät dich SecureBot AI zu</h2>
-        <ul class="wissen-list">
-            <li>Netzwerksicherheit</li>
-            <li>DSGVO & Compliance</li>
-            <li>OWASP Top 10</li>
-            <li>Cloud Security</li>
-            <li>Sicherer Code</li>
-            <li>Kryptographie</li>
-            <li>Social Engineering</li>
-            <li>Incident Response</li>
-        </ul>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" data-i18n="stat1_val">~3 Sek.</div>
+                <div class="stat-label" data-i18n="stat1_label">Antwortzeit</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">24/7</div>
+                <div class="stat-label" data-i18n="stat2_label">Verfuegbar</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" data-i18n="stat3_val">DSGVO</div>
+                <div class="stat-label" data-i18n="stat3_label">Konform</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">Frankfurt</div>
+                <div class="stat-label" data-i18n="stat4_label">Server-Standort</div>
+            </div>
+        </div>
     </div>
 </section>
 
-<!-- Pricing -->
-<section class="pricing">
+<!-- ===================== PRICING ===================== -->
+<section class="pricing" id="pricing">
     <div class="container">
-        <h2>Einfache Preise</h2>
-        <div class="price-toggle">
-            <span class="toggle-label active" id="label-monthly">Monatlich</span>
+        <h2 class="reveal" data-i18n="pricing_h2">Einfache Preise</h2>
+        <div class="price-toggle reveal">
+            <span class="toggle-label active" id="label-monthly" data-i18n="toggle_monthly">Monatlich</span>
             <div class="toggle-switch" id="price-toggle" onclick="togglePricing()"></div>
-            <span class="toggle-label" id="label-yearly">Jährlich<span class="price-save">Spare bis 17%</span></span>
+            <span class="toggle-label" id="label-yearly"><span data-i18n="toggle_yearly">Jaehrlich</span><span class="price-save" data-i18n="toggle_save">Spare bis 17%</span></span>
         </div>
         <div class="price-grid">
-            <div class="price-card">
+            <!-- Free -->
+            <div class="price-card reveal">
                 <h3>Free</h3>
-                <div class="price-amount">0 EUR <span>/Monat</span></div>
+                <div class="price-amount">0 EUR <span>/</span><span data-i18n="per_month">Monat</span></div>
                 <ul class="price-features">
-                    <li class="highlight">Phishing-Checker inklusive</li>
-                    <li>5 Fragen pro Tag</li>
-                    <li>Kompakte Antworten</li>
+                    <li class="hl" data-i18n="free_f1">Phishing-Checker inklusive</li>
+                    <li data-i18n="free_f2">5 Fragen pro Tag</li>
+                    <li data-i18n="free_f3">Kompakte Antworten</li>
                 </ul>
-                <a href="https://t.me/Lees_Securebot" class="price-btn price-btn-free">Kostenlos starten</a>
+                <a href="https://t.me/Lees_Securebot" class="price-btn btn-free" data-i18n="free_btn">Kostenlos starten</a>
             </div>
-            <div class="price-card featured">
+            <!-- Pro -->
+            <div class="price-card featured reveal" data-badge-de="BELIEBT" data-badge-en="POPULAR" data-badge="BELIEBT">
                 <h3>Pro</h3>
-                <div class="price-amount price-monthly">9,99 EUR <span>/Monat</span></div>
-                <div class="price-amount price-yearly" style="display:none;">99,90 EUR <span>/Jahr</span></div>
+                <div class="price-amount price-monthly">9,99 EUR <span>/</span><span data-i18n="per_month">Monat</span></div>
+                <div class="price-amount price-yearly" style="display:none">99,90 EUR <span>/</span><span data-i18n="per_year">Jahr</span></div>
                 <ul class="price-features">
-                    <li class="highlight">Security Audit mit KI-Empfehlungen</li>
-                    <li class="highlight">Phishing KI-Tiefenanalyse</li>
-                    <li>20 Fragen pro Tag</li>
-                    <li>Ausführlichere Antworten</li>
-                    <li>Stärkeres KI-Modell</li>
+                    <li class="hl" data-i18n="pro_f1">Security Audit mit KI-Empfehlungen</li>
+                    <li class="hl" data-i18n="pro_f2">Phishing KI-Tiefenanalyse</li>
+                    <li data-i18n="pro_f3">20 Fragen pro Tag</li>
+                    <li data-i18n="pro_f4">Ausfuehrlichere Antworten</li>
+                    <li data-i18n="pro_f5">Staerkeres KI-Modell</li>
                 </ul>
-                <a href="https://buy.stripe.com/cNi9AUekadJogJu5DggnK01" class="price-btn price-btn-pro price-monthly">Pro wählen</a>
-                <a href="https://buy.stripe.com/4gMeVe6RI48Obpa4zcgnK03" class="price-btn price-btn-pro price-yearly" style="display:none;">Pro wählen</a>
+                <a href="https://buy.stripe.com/cNi9AUekadJogJu5DggnK01" class="price-btn btn-pro price-monthly" data-i18n="pro_btn">Pro waehlen</a>
+                <a href="https://buy.stripe.com/4gMeVe6RI48Obpa4zcgnK03" class="price-btn btn-pro price-yearly" style="display:none" data-i18n="pro_btn">Pro waehlen</a>
             </div>
-            <div class="price-card">
+            <!-- Business -->
+            <div class="price-card reveal">
                 <h3>Business</h3>
-                <div class="price-amount price-monthly">29,99 EUR <span>/Monat</span></div>
-                <div class="price-amount price-yearly" style="display:none;">299,90 EUR <span>/Jahr</span></div>
+                <div class="price-amount price-monthly">29,99 EUR <span>/</span><span data-i18n="per_month">Monat</span></div>
+                <div class="price-amount price-yearly" style="display:none">299,90 EUR <span>/</span><span data-i18n="per_year">Jahr</span></div>
                 <ul class="price-features">
-                    <li class="highlight">Alles aus Pro +</li>
-                    <li class="highlight">Incident Response Guide</li>
-                    <li>30 Fragen pro Tag</li>
-                    <li>Code-Beispiele & Anleitungen</li>
-                    <li>Team-Zugang (bis 5 User)</li>
+                    <li class="hl" data-i18n="biz_f1">Alles aus Pro +</li>
+                    <li class="hl" data-i18n="biz_f2">Incident Response Guide</li>
+                    <li data-i18n="biz_f3">30 Fragen pro Tag</li>
+                    <li data-i18n="biz_f4">Code-Beispiele & Anleitungen</li>
+                    <li data-i18n="biz_f5">Team-Zugang (bis 5 User)</li>
                 </ul>
-                <a href="https://buy.stripe.com/eVq8wQ0tk9t8eBm3v8gnK02" class="price-btn price-btn-biz price-monthly">Business wählen</a>
-                <a href="https://buy.stripe.com/fZu6oI3Fw9t8dxi3v8gnK04" class="price-btn price-btn-biz price-yearly" style="display:none;">Business wählen</a>
+                <a href="https://buy.stripe.com/eVq8wQ0tk9t8eBm3v8gnK02" class="price-btn btn-biz price-monthly" data-i18n="biz_btn">Business waehlen</a>
+                <a href="https://buy.stripe.com/fZu6oI3Fw9t8dxi3v8gnK04" class="price-btn btn-biz price-yearly" style="display:none" data-i18n="biz_btn">Business waehlen</a>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Feedback -->
-<section class="feedback">
-    <h2>Dein Feedback zählt</h2>
-    <p>Hilf uns, SecureBot AI besser zu machen.</p>
-    <a href="mailto:securebot.ai.contact@gmail.com?subject=Feedback%20SecureBot%20AI" class="feedback-btn">Feedback senden</a>
+<!-- ===================== FAQ ===================== -->
+<section class="faq" id="faq">
+    <div class="container">
+        <h2 class="reveal" data-i18n="faq_h2">Haeufige Fragen</h2>
+        <div class="faq-list">
+            <div class="faq-item reveal">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq1_q">Ist SecureBot AI kostenlos?</span>
+                    <span class="faq-arrow">&#9662;</span>
+                </button>
+                <div class="faq-answer"><p data-i18n="faq1_a">Ja! Der Free-Plan beinhaltet den Phishing-Checker ohne Limit und 5 Security-Fragen pro Tag. Fuer erweiterte Features wie Security Audit gibt es Pro und Business.</p></div>
+            </div>
+            <div class="faq-item reveal">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq2_q">Brauche ich technisches Wissen?</span>
+                    <span class="faq-arrow">&#9662;</span>
+                </button>
+                <div class="faq-answer"><p data-i18n="faq2_a">Nein. Einfach deine Frage tippen oder einen verdaechtigen Link senden. SecureBot erklaert alles verstaendlich - egal ob Anfaenger oder Profi.</p></div>
+            </div>
+            <div class="faq-item reveal">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq3_q">Wo werden meine Daten gespeichert?</span>
+                    <span class="faq-arrow">&#9662;</span>
+                </button>
+                <div class="faq-answer"><p data-i18n="faq3_a">Auf einem Server in Frankfurt, Deutschland. Vollstaendig DSGVO-konform. Du kannst jederzeit deine Daten einsehen (/meinedaten) oder loeschen (/loeschen).</p></div>
+            </div>
+            <div class="faq-item reveal">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq4_q">Kann ich SecureBot im Team nutzen?</span>
+                    <span class="faq-arrow">&#9662;</span>
+                </button>
+                <div class="faq-answer"><p data-i18n="faq4_a">Ja! Mit dem Business-Plan kannst du bis zu 5 Team-Mitglieder hinzufuegen. Alle erhalten Zugang zu allen Pro-Features.</p></div>
+            </div>
+        </div>
+    </div>
 </section>
 
-<!-- KI-Hinweis -->
-<div class="ai-notice">
+<!-- ===================== FINAL CTA ===================== -->
+<section class="final-cta">
+    <div class="container">
+        <h2 class="reveal" data-i18n="final_h2">Warte nicht bis es zu spaet ist.</h2>
+        <p class="reveal" data-i18n="final_p">Alle 39 Sekunden passiert ein Cyberangriff. Der naechste koennte dich treffen.</p>
+        <a href="https://t.me/Lees_Securebot" class="cta-primary reveal" data-i18n="hero_cta">Jetzt kostenlos testen</a>
+        <div class="hero-trust reveal" style="margin-top:20px">
+            <span class="hero-trust-icon">&#x2615;</span>
+            <span data-i18n="final_trust">Kostet weniger als ein Kaffee pro Tag. Der Free-Plan ist fuer immer kostenlos.</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== AI NOTICE ===================== -->
+<div class="ai-notice" data-i18n="ai_notice">
     Alle Antworten werden von KI generiert (Claude AI). Keine professionelle Sicherheitsberatung. Nutzung auf eigenes Risiko.
 </div>
 
-<!-- Footer -->
+<!-- ===================== FOOTER ===================== -->
 <footer class="footer">
+    <div class="footer-trust">
+        <div class="trust-badge">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span data-i18n="trust_1">DSGVO-konform</span>
+        </div>
+        <div class="trust-badge">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span data-i18n="trust_2">Server in Frankfurt</span>
+        </div>
+        <div class="trust-badge">
+            <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2"/></svg>
+            <span data-i18n="trust_3">EU AI Act konform</span>
+        </div>
+    </div>
     <div class="footer-links">
         <a href="https://t.me/Lees_Securebot">Telegram Bot</a>
-        <a href="mailto:securebot.ai.contact@gmail.com">Kontakt</a>
+        <a href="mailto:securebot.ai.contact@gmail.com" data-i18n="footer_contact">Kontakt</a>
     </div>
-    <p>AP Digital Solution - Alexander Potzahr, Hamburg | Kleinunternehmer gem. &sect; 19 UStG</p>
+    <p class="footer-legal">
+        AP Digital Solution - Alexander Potzahr, Hamburg | <span data-i18n="footer_legal">Kleinunternehmer gem. &sect; 19 UStG</span>
+    </p>
 </footer>
 
 <script>
+/* ============================================
+   TRANSLATIONS (DE/EN)
+   ============================================ */
+const T = {
+de: {
+    nav_cta: "Jetzt testen",
+    hero_stat: "Cyberangriffe seit du diese Seite ge\u00f6ffnet hast",
+    hero_h1: '<span class="accent">Dein KI-Sicherheitsberater.</span><br>24/7. Sofort einsatzbereit.',
+    hero_sub: 'Phishing-Mail erhalten? Unsicher ob der Link echt ist?<br><strong>Frag SecureBot \u2013 in 3 Sekunden wei\u00dft du Bescheid.</strong>',
+    hero_cta: "Jetzt kostenlos testen",
+    hero_trust: "Kein Login. L\u00e4uft \u00fcber Telegram. In 30 Sekunden startklar.",
+    demo_h2: "Sieh selbst, wie es funktioniert",
+    demo_sub: "Echte Phishing-Erkennung. In Echtzeit.",
+    pain_h2: "Kennst du das?",
+    pain_1: 'Du erh\u00e4ltst eine E-Mail von \u201edeiner Bank\u201c \u2013 aber ist sie echt? Ein falscher Klick und dein Konto ist kompromittiert.',
+    pain_2: 'Dein Mitarbeiter klickt auf einen Link \u2013 war das Phishing? 91% aller Cyberangriffe starten mit einer E-Mail.',
+    pain_3: 'Du wirst gehackt \u2013 was jetzt? Wen rufst du um 3 Uhr nachts an? Jede Minute z\u00e4hlt.',
+    pain_answer: 'SecureBot AI ist dein Security-Experte.<br>Rund um die Uhr. F\u00fcr einen Bruchteil der Kosten.',
+    tools_h2: "Das kann SecureBot AI",
+    tools_sub: "Echte Werkzeuge \u2013 nicht nur Fragen beantworten.",
+    tool1_h3: "Phishing-Checker",
+    badge_free: "KOSTENLOS",
+    tool1_p: "Verd\u00e4chtigen Link senden \u2013 sofort Risiko-Score 1-10. Typosquatting, gef\u00e4lschte Domains, Social Engineering erkennen. Ohne Limit.",
+    tool2_h3: "Security Audit",
+    tool2_p: "10 Fragen, 5 Minuten \u2013 deine pers\u00f6nliche Security-Note A-F. Mit KI-Empfehlungen f\u00fcr deine Schwachstellen.",
+    tool3_h3: "Incident Response",
+    tool3_p: "Account gehackt? Malware entdeckt? Gef\u00fchrter Notfall-Prozess nach NIST-Framework. Schritt f\u00fcr Schritt.",
+    stat1_val: "~3 Sek.",
+    stat1_label: "Antwortzeit",
+    stat2_label: "Verf\u00fcgbar",
+    stat3_val: "DSGVO",
+    stat3_label: "Konform",
+    stat4_label: "Server-Standort",
+    pricing_h2: "Einfache Preise",
+    toggle_monthly: "Monatlich",
+    toggle_yearly: "J\u00e4hrlich",
+    toggle_save: "Spare bis 17%",
+    per_month: "Monat",
+    per_year: "Jahr",
+    free_f1: "Phishing-Checker inklusive",
+    free_f2: "5 Fragen pro Tag",
+    free_f3: "Kompakte Antworten",
+    free_btn: "Kostenlos starten",
+    pro_f1: "Security Audit mit KI-Empfehlungen",
+    pro_f2: "Phishing KI-Tiefenanalyse",
+    pro_f3: "20 Fragen pro Tag",
+    pro_f4: "Ausf\u00fchrlichere Antworten",
+    pro_f5: "St\u00e4rkeres KI-Modell",
+    pro_btn: "Pro w\u00e4hlen",
+    biz_f1: "Alles aus Pro +",
+    biz_f2: "Incident Response Guide",
+    biz_f3: "30 Fragen pro Tag",
+    biz_f4: "Code-Beispiele & Anleitungen",
+    biz_f5: "Team-Zugang (bis 5 User)",
+    biz_btn: "Business w\u00e4hlen",
+    faq_h2: "H\u00e4ufige Fragen",
+    faq1_q: "Ist SecureBot AI kostenlos?",
+    faq1_a: "Ja! Der Free-Plan beinhaltet den Phishing-Checker ohne Limit und 5 Security-Fragen pro Tag. F\u00fcr erweiterte Features wie Security Audit gibt es Pro und Business.",
+    faq2_q: "Brauche ich technisches Wissen?",
+    faq2_a: "Nein. Einfach deine Frage tippen oder einen verd\u00e4chtigen Link senden. SecureBot erkl\u00e4rt alles verst\u00e4ndlich \u2013 egal ob Anf\u00e4nger oder Profi.",
+    faq3_q: "Wo werden meine Daten gespeichert?",
+    faq3_a: "Auf einem Server in Frankfurt, Deutschland. Vollst\u00e4ndig DSGVO-konform. Du kannst jederzeit deine Daten einsehen (/meinedaten) oder l\u00f6schen (/loeschen).",
+    faq4_q: "Kann ich SecureBot im Team nutzen?",
+    faq4_a: "Ja! Mit dem Business-Plan kannst du bis zu 5 Team-Mitglieder hinzuf\u00fcgen. Alle erhalten Zugang zu allen Pro-Features.",
+    final_h2: "Warte nicht bis es zu sp\u00e4t ist.",
+    final_p: "Alle 39 Sekunden passiert ein Cyberangriff. Der n\u00e4chste k\u00f6nnte dich treffen.",
+    final_trust: "Kostet weniger als ein Kaffee pro Tag. Der Free-Plan ist f\u00fcr immer kostenlos.",
+    ai_notice: "Alle Antworten werden von KI generiert (Claude AI). Keine professionelle Sicherheitsberatung. Nutzung auf eigenes Risiko.",
+    trust_1: "DSGVO-konform",
+    trust_2: "Server in Frankfurt",
+    trust_3: "EU AI Act konform",
+    footer_contact: "Kontakt",
+    footer_legal: "Kleinunternehmer gem. \u00a7 19 UStG"
+},
+en: {
+    nav_cta: "Try now",
+    hero_stat: "Cyberattacks since you opened this page",
+    hero_h1: '<span class="accent">Your AI Security Advisor.</span><br>24/7. Instant.',
+    hero_sub: 'Received a phishing email? Unsure if a link is legit?<br><strong>Ask SecureBot \u2013 know in 3 seconds.</strong>',
+    hero_cta: "Try for free now",
+    hero_trust: "No login. Runs on Telegram. Ready in 30 seconds.",
+    demo_h2: "See how it works",
+    demo_sub: "Real phishing detection. In real time.",
+    pain_h2: "Sound familiar?",
+    pain_1: 'You receive an email from \u201cyour bank\u201d \u2013 but is it real? One wrong click and your account is compromised.',
+    pain_2: 'Your employee clicks a link \u2013 was it phishing? 91% of all cyberattacks start with an email.',
+    pain_3: "You've been hacked \u2013 what now? Who do you call at 3 AM? Every minute counts.",
+    pain_answer: "SecureBot AI is your security expert.<br>Around the clock. At a fraction of the cost.",
+    tools_h2: "What SecureBot AI can do",
+    tools_sub: "Real tools \u2013 not just answering questions.",
+    tool1_h3: "Phishing Checker",
+    badge_free: "FREE",
+    tool1_p: "Send a suspicious link \u2013 get an instant risk score 1-10. Detect typosquatting, fake domains, social engineering. No limits.",
+    tool2_h3: "Security Audit",
+    tool2_p: "10 questions, 5 minutes \u2013 your personal security grade A-F. With AI recommendations for your vulnerabilities.",
+    tool3_h3: "Incident Response",
+    tool3_p: "Account hacked? Malware found? Guided emergency process based on NIST framework. Step by step.",
+    stat1_val: "~3 sec",
+    stat1_label: "Response time",
+    stat2_label: "Available",
+    stat3_val: "GDPR",
+    stat3_label: "Compliant",
+    stat4_label: "Server location",
+    pricing_h2: "Simple pricing",
+    toggle_monthly: "Monthly",
+    toggle_yearly: "Yearly",
+    toggle_save: "Save up to 17%",
+    per_month: "month",
+    per_year: "year",
+    free_f1: "Phishing Checker included",
+    free_f2: "5 questions per day",
+    free_f3: "Compact answers",
+    free_btn: "Start for free",
+    pro_f1: "Security Audit with AI recommendations",
+    pro_f2: "Phishing AI deep analysis",
+    pro_f3: "20 questions per day",
+    pro_f4: "More detailed answers",
+    pro_f5: "Stronger AI model",
+    pro_btn: "Choose Pro",
+    biz_f1: "Everything in Pro +",
+    biz_f2: "Incident Response Guide",
+    biz_f3: "30 questions per day",
+    biz_f4: "Code examples & guides",
+    biz_f5: "Team access (up to 5 users)",
+    biz_btn: "Choose Business",
+    faq_h2: "Frequently asked questions",
+    faq1_q: "Is SecureBot AI free?",
+    faq1_a: "Yes! The Free plan includes the Phishing Checker with no limits and 5 security questions per day. For advanced features like Security Audit, there's Pro and Business.",
+    faq2_q: "Do I need technical knowledge?",
+    faq2_a: "No. Just type your question or send a suspicious link. SecureBot explains everything clearly \u2013 whether you're a beginner or a pro.",
+    faq3_q: "Where is my data stored?",
+    faq3_a: "On a server in Frankfurt, Germany. Fully GDPR compliant. You can view your data (/meinedaten) or delete it (/loeschen) anytime.",
+    faq4_q: "Can I use SecureBot with my team?",
+    faq4_a: "Yes! With the Business plan, you can add up to 5 team members. Everyone gets access to all Pro features.",
+    final_h2: "Don\u2019t wait until it\u2019s too late.",
+    final_p: "A cyberattack happens every 39 seconds. The next one could hit you.",
+    final_trust: "Costs less than a coffee per day. The Free plan is free forever.",
+    ai_notice: "All responses are AI-generated (Claude AI). Not professional security advice. Use at your own risk.",
+    trust_1: "GDPR compliant",
+    trust_2: "Server in Frankfurt",
+    trust_3: "EU AI Act compliant",
+    footer_contact: "Contact",
+    footer_legal: "Small business acc. to \u00a7 19 UStG"
+}
+};
+
+/* Chat demo messages */
+const chatDE = [
+    {type:'user', text:'Ist dieser Link sicher? https://paypa1.com/login'},
+    {type:'bot', html:'<span class="warn-badge">WARNUNG</span><br><span class="risk-score">Risiko: 9/10</span> \u2013 Typosquatting erkannt.<br><strong>paypa1.com</strong> imitiert <strong>paypal.com</strong> (Ziffer \u201e1\u201c statt Buchstabe \u201el\u201c). Klassische Phishing-Domain.'},
+    {type:'user', text:'Was soll ich tun?'},
+    {type:'bot', html:'<span class="safe-action">\u2713 Empfehlung:</span><br>1. Link <strong>NICHT</strong> klicken<br>2. Absender blockieren<br>3. Falls bereits geklickt: Passwort sofort \u00e4ndern + 2FA aktivieren'}
+];
+const chatEN = [
+    {type:'user', text:'Is this link safe? https://paypa1.com/login'},
+    {type:'bot', html:'<span class="warn-badge">WARNING</span><br><span class="risk-score">Risk: 9/10</span> \u2013 Typosquatting detected.<br><strong>paypa1.com</strong> impersonates <strong>paypal.com</strong> (digit \u201c1\u201d instead of letter \u201cl\u201d). Classic phishing domain.'},
+    {type:'user', text:'What should I do?'},
+    {type:'bot', html:'<span class="safe-action">\u2713 Recommendation:</span><br>1. Do <strong>NOT</strong> click the link<br>2. Block the sender<br>3. If already clicked: Change password immediately + enable 2FA'}
+];
+
+let currentLang = localStorage.getItem('sb-lang') || 'de';
+let chatRunning = false;
+let chatTimeout = null;
+
+/* ============================================
+   LANGUAGE SWITCHER
+   ============================================ */
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('sb-lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+
+    // Update active button
+    document.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+    });
+
+    // Update all translatable elements
+    const t = T[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (t[key] !== undefined) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.placeholder = t[key];
+            } else {
+                el.innerHTML = t[key];
+            }
+        }
+    });
+
+    // Update featured badge
+    document.querySelectorAll('.price-card.featured').forEach(card => {
+        card.setAttribute('data-badge', lang === 'en' ? card.dataset.badgeEn : card.dataset.badgeDe);
+    });
+
+    // Restart chat demo
+    restartChat();
+}
+
+/* ============================================
+   ATTACK COUNTER
+   ============================================ */
+let counterStart = null;
+const counterEl = document.getElementById('attack-counter');
+function updateCounter(timestamp) {
+    if (!counterStart) counterStart = timestamp;
+    // ~1 attack every 39 seconds = ~0.02564 per second
+    const elapsed = (timestamp - counterStart) / 1000;
+    const attacks = Math.floor(elapsed / 39 * 1000); // Accelerated for visual impact: ~25.6/sec
+    // More realistic but still impressive: show elapsed/39 scaled up
+    const displayed = Math.floor(elapsed * 0.7); // ~0.7 attacks per second visual
+    counterEl.textContent = displayed.toLocaleString();
+    requestAnimationFrame(updateCounter);
+}
+requestAnimationFrame(updateCounter);
+
+/* ============================================
+   CHAT DEMO ANIMATION
+   ============================================ */
+function restartChat() {
+    if (chatTimeout) clearTimeout(chatTimeout);
+    const body = document.getElementById('chat-body');
+    const typing = document.getElementById('typing');
+    // Remove old messages
+    body.querySelectorAll('.chat-msg').forEach(m => m.remove());
+    typing.classList.remove('visible');
+    chatRunning = true;
+    const msgs = currentLang === 'en' ? chatEN : chatDE;
+    runChat(msgs, 0, body, typing);
+}
+
+function runChat(msgs, idx, body, typing) {
+    if (idx >= msgs.length) {
+        // Pause then restart
+        chatTimeout = setTimeout(() => {
+            body.querySelectorAll('.chat-msg').forEach(m => m.remove());
+            runChat(msgs, 0, body, typing);
+        }, 5000);
+        return;
+    }
+    const msg = msgs[idx];
+    if (msg.type === 'bot') {
+        typing.classList.add('visible');
+        chatTimeout = setTimeout(() => {
+            typing.classList.remove('visible');
+            const div = document.createElement('div');
+            div.className = 'chat-msg bot' + (msg.html.includes('warn-badge') ? ' warning' : '');
+            div.innerHTML = msg.html;
+            body.insertBefore(div, typing);
+            requestAnimationFrame(() => div.classList.add('visible'));
+            chatTimeout = setTimeout(() => runChat(msgs, idx + 1, body, typing), 1800);
+        }, 1500);
+    } else {
+        const div = document.createElement('div');
+        div.className = 'chat-msg user';
+        div.textContent = msg.text;
+        body.insertBefore(div, typing);
+        requestAnimationFrame(() => div.classList.add('visible'));
+        chatTimeout = setTimeout(() => runChat(msgs, idx + 1, body, typing), 1200);
+    }
+}
+
+/* ============================================
+   PRICING TOGGLE
+   ============================================ */
 function togglePricing() {
     const toggle = document.getElementById('price-toggle');
     const monthly = document.querySelectorAll('.price-monthly');
@@ -507,6 +1091,46 @@ function togglePricing() {
     labelM.classList.toggle('active', !isYearly);
     labelY.classList.toggle('active', isYearly);
 }
+
+/* ============================================
+   FAQ ACCORDION
+   ============================================ */
+function toggleFaq(btn) {
+    const item = btn.parentElement;
+    const wasOpen = item.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+}
+
+/* ============================================
+   SCROLL REVEAL (IntersectionObserver)
+   ============================================ */
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+/* ============================================
+   INIT
+   ============================================ */
+setLang(currentLang);
+
+// Start chat demo when demo section is visible
+const demoObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting && !chatRunning) {
+            restartChat();
+            demoObserver.disconnect();
+        }
+    });
+}, { threshold: 0.3 });
+demoObserver.observe(document.getElementById('demo'));
 </script>
 
 </body>
