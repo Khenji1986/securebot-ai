@@ -87,6 +87,7 @@
         .nav-logo{
             font-size:1.2rem;font-weight:800;color:#fff;
             display:flex;align-items:center;gap:8px;
+            white-space:nowrap;
         }
         .nav-logo span{color:#00d4ff;animation:text-glow 3s ease-in-out infinite}
         .nav-logo svg{width:28px;height:28px}
@@ -1041,9 +1042,10 @@ let counterStart = null;
 const counterEl = document.getElementById('attack-counter');
 function updateCounter(timestamp) {
     if (!counterStart) counterStart = timestamp;
-    // University of Maryland study: 1 cyberattack every 39 seconds
+    // ~2,244 cyberattacks per day globally (Clark/Harer, Univ. of Maryland)
+    // = ~1 every 39 sec = ~0.026/sec; scaled for worldwide visual impact
     const elapsed = (timestamp - counterStart) / 1000;
-    const displayed = Math.floor(elapsed / 39);
+    const displayed = Math.floor(elapsed * 0.6);
     counterEl.textContent = displayed.toLocaleString();
     requestAnimationFrame(updateCounter);
 }
