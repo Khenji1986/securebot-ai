@@ -9,7 +9,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: #e0e0e0;
-            background: #0a0a0a;
+            background: #0a0a0f;
             line-height: 1.8;
             padding: 40px 20px;
         }
@@ -23,18 +23,26 @@
         a { color: #00d4ff; text-decoration: none; }
         a:hover { text-decoration: underline; }
         .back-link { margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; }
-        .updated { color: #666; font-size: 0.9rem; margin-bottom: 32px; }
+        .updated { color: #999; font-size: 0.9rem; margin-bottom: 32px; }
         table { width: 100%; border-collapse: collapse; margin: 16px 0; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
         th { color: #00d4ff; }
         td { color: #bbb; }
+        .widerruf-box {
+            background: #12121a;
+            border: 1px solid #1e1e2e;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 16px 0;
+        }
+        .widerruf-box h3 { margin-top: 0; }
     </style>
 </head>
 <body>
 <div class="container">
 
 <h1>Allgemeine Geschaeftsbedingungen (AGB)</h1>
-<p class="updated">Stand: 5. Februar 2026</p>
+<p class="updated">Stand: 11. Februar 2026</p>
 
 <h2>1. Geltungsbereich</h2>
 <p>Diese Allgemeinen Geschaeftsbedingungen gelten fuer die Nutzung des Dienstes "SecureBot AI", einem KI-gestuetzten IT-Security Berater auf Telegram, betrieben von:</p>
@@ -43,18 +51,26 @@
     Alexander Potzahr<br>
     Hahnenkamp 2, 22765 Hamburg<br>
     E-Mail: <a href="mailto:securebot.ai.contact@gmail.com">securebot.ai.contact@gmail.com</a><br>
-    Kleinunternehmer gemaess § 19 UStG (keine Umsatzsteuer wird ausgewiesen)
+    Kleinunternehmer gemaess &sect; 19 UStG (keine Umsatzsteuer wird ausgewiesen)
 </p>
 
 <h2>2. Leistungsbeschreibung</h2>
 <p>SecureBot AI ist ein Telegram-Bot, der mittels kuenstlicher Intelligenz (Claude AI von Anthropic) Fragen zu IT-Sicherheitsthemen beantwortet. Der Dienst bietet:</p>
-<ul>
-    <li>Beantwortung von Cybersecurity-Fragen</li>
-    <li>Orientierung zu DSGVO und Compliance</li>
-    <li>Erklaerung von Security-Konzepten</li>
-    <li>Cloud Security Best Practices</li>
-    <li>Tipps fuer sichereren Code</li>
-</ul>
+
+<h3>2.1 Phishing-Checker (alle Plaene)</h3>
+<p>Analyse von verdaechtigen Links und URLs mit Risiko-Score (1-10). Erkennung von Typosquatting, gefaelschten Domains und Social-Engineering-Mustern. Dieses Feature ist kostenlos und ohne Tageslimit verfuegbar.</p>
+
+<h3>2.2 Security-Beratung (alle Plaene)</h3>
+<p>Beantwortung von Fragen zu Cybersecurity, DSGVO, Compliance, Cloud Security, sicherem Code, Kryptographie und weiteren IT-Sicherheitsthemen.</p>
+
+<h3>2.3 Security Audit (Pro &amp; Business)</h3>
+<p>Strukturierter Quick-Check mit 10 Fragen zu deiner IT-Sicherheit. Du erhaeltst eine persoenliche Security-Note (A-F) sowie individuelle KI-Empfehlungen fuer identifizierte Schwachstellen.</p>
+
+<h3>2.4 Incident Response Guide (Business)</h3>
+<p>Gefuehrter Notfall-Prozess nach NIST-Framework bei Sicherheitsvorfaellen (z.B. Account-Kompromittierung, Malware-Befall). Schritt-fuer-Schritt-Anleitung fuer 6 Vorfallstypen.</p>
+
+<h3>2.5 Team-Zugang (Business)</h3>
+<p>Business-Kunden koennen bis zu 5 Team-Mitglieder hinzufuegen, die Zugang zu den Pro-Features erhalten.</p>
 
 <h2>3. Verfuegbare Plaene und Preise</h2>
 <table>
@@ -68,87 +84,123 @@
         <td>Free</td>
         <td>0 EUR</td>
         <td>5</td>
-        <td>Kompakte Antworten</td>
+        <td>Phishing-Checker (unbegrenzt), Security-Beratung (kompakt)</td>
     </tr>
     <tr>
         <td>Pro (monatlich)</td>
         <td>9,99 EUR/Monat</td>
         <td>20</td>
-        <td>Ausfuehrlichere Antworten, staerkeres KI-Modell</td>
+        <td>Alles aus Free + Security Audit, KI-Tiefenanalyse, ausfuehrlichere Antworten, staerkeres KI-Modell</td>
     </tr>
     <tr>
         <td>Pro (jaehrlich)</td>
         <td>99,90 EUR/Jahr</td>
         <td>20</td>
-        <td>Wie Pro monatlich, ca. 20 EUR Ersparnis</td>
+        <td>Wie Pro monatlich (ca. 17% Ersparnis)</td>
     </tr>
     <tr>
         <td>Business (monatlich)</td>
         <td>29,99 EUR/Monat</td>
         <td>30</td>
-        <td>Maximale Antworttiefe, Code-Beispiele, Team bis 5 User</td>
+        <td>Alles aus Pro + Incident Response Guide, Code-Beispiele, Anleitungen, Team-Zugang bis 5 User</td>
     </tr>
     <tr>
         <td>Business (jaehrlich)</td>
         <td>299,90 EUR/Jahr</td>
         <td>30</td>
-        <td>Wie Business monatlich, ca. 60 EUR Ersparnis</td>
+        <td>Wie Business monatlich (ca. 17% Ersparnis)</td>
     </tr>
 </table>
-<p>Alle Preise verstehen sich als Endpreise. Gemaess § 19 UStG wird keine Umsatzsteuer ausgewiesen.</p>
+<p>Alle Preise verstehen sich als Endpreise. Gemaess &sect; 19 UStG wird keine Umsatzsteuer ausgewiesen.</p>
 
-<h2>4. Vertragsschluss und Zahlung</h2>
-<p>Der Vertrag kommt durch Abschluss des Bezahlvorgangs ueber Stripe zustande. Die Zahlung erfolgt im Voraus. Bei wiederkehrenden Abonnements wird der Betrag automatisch monatlich oder jaehrlich abgebucht.</p>
+<h2>4. Kostenlose Testphase (Trial)</h2>
+<p>Neue Nutzer koennen einmalig eine <strong>7-taegige kostenlose Testphase</strong> des Pro-Plans aktivieren (Befehl: /trial im Bot). Waehrend der Testphase stehen alle Pro-Features zur Verfuegung.</p>
+<ul>
+    <li>Die Testphase endet automatisch nach 7 Tagen.</li>
+    <li>Es erfolgt <strong>keine automatische Verlaengerung</strong> und keine Abbuchung.</li>
+    <li>Nach Ablauf wechselt der Account zurueck zum Free-Plan.</li>
+    <li>Die Testphase kann pro Nutzer nur einmal aktiviert werden.</li>
+</ul>
 
-<h2>5. Widerrufsrecht</h2>
+<h2>5. Vertragsschluss und Zahlung</h2>
+<p>Der Vertrag kommt durch Abschluss des Bezahlvorgangs ueber Stripe zustande. Die Zahlung erfolgt im Voraus.</p>
+<ul>
+    <li><strong>Monatliche Abonnements:</strong> Der Betrag wird automatisch monatlich abgebucht bis zur Kuendigung.</li>
+    <li><strong>Jaehrliche Abonnements:</strong> Der Betrag wird einmalig fuer 12 Monate abgebucht und verlaengert sich automatisch.</li>
+</ul>
+
+<h2>6. Widerrufsrecht</h2>
 <p>Du hast das Recht, binnen <strong>14 Tagen</strong> ohne Angabe von Gruenden diesen Vertrag zu widerrufen. Die Widerrufsfrist betraegt 14 Tage ab dem Tag des Vertragsabschlusses.</p>
-<p>Um dein Widerrufsrecht auszuueben, sende eine E-Mail an: <a href="mailto:securebot.ai.contact@gmail.com">securebot.ai.contact@gmail.com</a></p>
-<p>Im Falle eines wirksamen Widerrufs erstatten wir dir alle Zahlungen unverzueglich und spaetestens binnen 14 Tagen.</p>
+<p>Um dein Widerrufsrecht auszuueben, sende eine eindeutige Erklaerung per E-Mail an: <a href="mailto:securebot.ai.contact@gmail.com">securebot.ai.contact@gmail.com</a></p>
+<p>Im Falle eines wirksamen Widerrufs erstatten wir dir alle Zahlungen unverzueglich und spaetestens binnen 14 Tagen mittels desselben Zahlungsmittels.</p>
 
-<h2>6. Kuendigung</h2>
-<p>Du kannst dein Abonnement jederzeit per E-Mail kuendigen. Die Kuendigung wird zum Ende des aktuellen Abrechnungszeitraums wirksam. Bereits bezahlte Zeitraeume werden nicht erstattet.</p>
+<div class="widerruf-box">
+    <h3>Muster-Widerrufsformular</h3>
+    <p>(Wenn du den Vertrag widerrufen willst, fuellst du dieses Formular aus und sendest es per E-Mail zurueck.)</p>
+    <p>
+        An: AP Digital Solution, Alexander Potzahr, securebot.ai.contact@gmail.com<br><br>
+        Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag ueber die Erbringung der folgenden Dienstleistung: SecureBot AI [Pro/Business]-Abonnement<br><br>
+        Bestellt am / erhalten am (*): _______________<br>
+        Name des/der Verbraucher(s): _______________<br>
+        Telegram Username: _______________<br>
+        Datum: _______________<br>
+        Unterschrift (nur bei Mitteilung auf Papier): _______________<br><br>
+        (*) Unzutreffendes streichen.
+    </p>
+</div>
 
-<h2>7. Haftungsausschluss</h2>
+<h2>7. Kuendigung</h2>
+<p>Du kannst dein Abonnement jederzeit kuendigen:</p>
+<ul>
+    <li>Per E-Mail an <a href="mailto:securebot.ai.contact@gmail.com">securebot.ai.contact@gmail.com</a></li>
+    <li>Ueber den Bot-Support (tippe /support im Bot)</li>
+</ul>
+<p>Die Kuendigung wird zum Ende des aktuellen Abrechnungszeitraums wirksam. Bereits bezahlte Zeitraeume werden nicht anteilig erstattet (unbeschadet des Widerrufsrechts).</p>
+
+<h2>8. Haftungsausschluss</h2>
 <p><strong>Wichtig:</strong></p>
 <ul>
     <li>Die Antworten von SecureBot AI stellen <strong>keine professionelle Rechts-, Sicherheits- oder IT-Beratung</strong> dar.</li>
     <li>Die Nutzung erfolgt auf eigenes Risiko.</li>
-    <li>Fuer Schaeden, die durch die Anwendung der bereitgestellten Informationen entstehen, wird keine Haftung uebernommen.</li>
+    <li>Fuer Schaeden, die durch die Anwendung der bereitgestellten Informationen entstehen, wird keine Haftung uebernommen, es sei denn es liegt Vorsatz oder grobe Fahrlaessigkeit vor.</li>
     <li>Bei kritischen Sicherheitsfragen sollte immer ein qualifizierter Experte hinzugezogen werden.</li>
 </ul>
 
-<h2>8. KI-Hinweis (EU AI Act)</h2>
+<h2>9. KI-Hinweis (EU AI Act)</h2>
 <ul>
-    <li>Alle Antworten werden von kuenstlicher Intelligenz generiert (Claude AI, Anthropic).</li>
-    <li>Der Kundensupport ist KI-gestuetzt.</li>
-    <li>Bei Bedarf erfolgt eine Weiterleitung an einen menschlichen Mitarbeiter.</li>
+    <li>Alle Antworten werden von kuenstlicher Intelligenz generiert (Claude AI von Anthropic, Modelle: Claude Sonnet und Claude Haiku).</li>
+    <li>Der Kundensupport ist KI-gestuetzt. Bei Bedarf erfolgt eine Weiterleitung an einen menschlichen Mitarbeiter.</li>
+    <li>Es werden keine automatisierten Entscheidungen mit rechtlicher Wirkung getroffen (Art. 22 DSGVO).</li>
+    <li>Die KI kann fehlerhafte oder unvollstaendige Informationen liefern.</li>
 </ul>
 
-<h2>9. Verbotene Nutzung</h2>
+<h2>10. Verbotene Nutzung</h2>
 <p>Folgende Nutzung ist untersagt:</p>
 <ul>
     <li>Illegale Aktivitaeten oder Vorbereitung solcher</li>
-    <li>Versuche, die KI zu manipulieren oder zu missbrauchen</li>
+    <li>Versuche, die KI zu manipulieren oder zu missbrauchen (Prompt Injection)</li>
     <li>Automatisierte Massenabfragen</li>
     <li>Weitergabe von Zugangsdaten an unbefugte Dritte</li>
+    <li>Nutzung zum Erstellen von Malware oder Angriffswerkzeugen</li>
 </ul>
 
-<h2>10. Aenderungen der AGB</h2>
-<p>Wir behalten uns vor, diese AGB zu aendern. Ueber wesentliche Aenderungen werden Nutzer per Telegram informiert. Die fortgesetzte Nutzung nach Inkrafttreten der Aenderungen gilt als Zustimmung.</p>
+<h2>11. Aenderungen der AGB</h2>
+<p>Wir behalten uns vor, diese AGB zu aendern. Bei wesentlichen Aenderungen werden Nutzer per Telegram mindestens <strong>4 Wochen im Voraus</strong> informiert. Du hast das Recht, den Aenderungen innerhalb dieser Frist zu widersprechen. Bei Widerspruch endet der Vertrag zum naechstmoeglichen Zeitpunkt.</p>
 
-<h2>11. Schlussbestimmungen</h2>
+<h2>12. Schlussbestimmungen</h2>
 <ul>
-    <li>Es gilt deutsches Recht.</li>
+    <li>Es gilt deutsches Recht unter Ausschluss des UN-Kaufrechts.</li>
     <li>Gerichtsstand ist Hamburg, sofern gesetzlich zulaessig.</li>
-    <li>Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der uebrigen Bestimmungen unberuehrt.</li>
+    <li>Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der uebrigen Bestimmungen unberuehrt (Salvatorische Klausel).</li>
+    <li>Die EU-Kommission stellt eine Plattform zur Online-Streitbeilegung bereit: <a href="https://ec.europa.eu/consumers/odr" target="_blank">https://ec.europa.eu/consumers/odr</a>. Wir sind weder verpflichtet noch bereit, an einem Streitbeilegungsverfahren teilzunehmen.</li>
 </ul>
 
-<h2>12. Kontakt</h2>
+<h2>13. Kontakt</h2>
 <p>Bei Fragen zu diesen AGB:</p>
 <p>E-Mail: <a href="mailto:securebot.ai.contact@gmail.com">securebot.ai.contact@gmail.com</a></p>
 
 <div class="back-link">
-    <a href="/">Zurueck zur Startseite</a> | <a href="/datenschutz.html">Datenschutz</a> | <a href="https://t.me/Lees_Securebot">Zum Bot</a>
+    <a href="/">Zurueck zur Startseite</a> | <a href="datenschutz.html">Datenschutz</a> | <a href="https://t.me/Lees_Securebot">Zum Bot</a>
 </div>
 
 </div>

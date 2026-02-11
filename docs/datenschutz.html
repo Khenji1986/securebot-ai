@@ -9,7 +9,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: #e0e0e0;
-            background: #0a0a0a;
+            background: #0a0a0f;
             line-height: 1.8;
             padding: 40px 20px;
         }
@@ -23,24 +23,30 @@
         a { color: #00d4ff; text-decoration: none; }
         a:hover { text-decoration: underline; }
         .back-link { margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; }
-        .updated { color: #666; font-size: 0.9rem; margin-bottom: 32px; }
+        .updated { color: #999; font-size: 0.9rem; margin-bottom: 32px; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #00d4ff; }
+        td { color: #bbb; }
     </style>
 </head>
 <body>
 <div class="container">
 
 <h1>Datenschutzerklaerung</h1>
-<p class="updated">Stand: 5. Februar 2026</p>
+<p class="updated">Stand: 11. Februar 2026</p>
 
 <h2>1. Verantwortlicher</h2>
 <p>
     <strong>AP Digital Solution</strong><br>
     Alexander Potzahr<br>
-    Hamburg, Deutschland<br>
+    Hahnenkamp 2, 22765 Hamburg, Deutschland<br>
     E-Mail: <a href="mailto:securebot.ai.contact@gmail.com">securebot.ai.contact@gmail.com</a>
 </p>
 
 <h2>2. Welche Daten wir erheben</h2>
+
+<h3>2.1 Bei Nutzung des Telegram-Bots</h3>
 <p>Bei der Nutzung von SecureBot AI werden folgende Daten verarbeitet:</p>
 <ul>
     <li><strong>Telegram User ID</strong> - Zur Identifikation deines Accounts</li>
@@ -52,71 +58,124 @@
     <li><strong>Abo-Status</strong> - Zur Verwaltung deines Plans (Free/Pro/Business)</li>
 </ul>
 
+<h3>2.2 Bei Nutzung des Phishing-Checkers</h3>
+<p>Wenn du den Phishing-Checker nutzt, werden die von dir gesendeten <strong>URLs und Links</strong> verarbeitet und analysiert. Diese URLs koennen personenbezogene Daten enthalten (z.B. E-Mail-Adressen in URL-Parametern). Die URLs werden ausschliesslich zur Analyse gespeichert und nicht an Dritte weitergegeben (ausser an Claude AI zur Analyse, siehe Abschnitt 4.2).</p>
+
+<h3>2.3 Bei Besuch der Webseite (Landing Page)</h3>
+<p>Unsere Webseite (gehostet auf GitHub Pages) erhebt:</p>
+<ul>
+    <li><strong>Spracheinstellung</strong> - Wird lokal in deinem Browser gespeichert (localStorage). Diese Daten verlassen dein Geraet nicht.</li>
+    <li><strong>Technische Zugriffsdaten</strong> - Durch den Hosting-Anbieter GitHub (siehe Abschnitt 4.5).</li>
+</ul>
+<p>Wir setzen <strong>keine Cookies</strong> und nutzen <strong>keine Tracking- oder Analyse-Tools</strong> auf unserer Webseite.</p>
+
 <h2>3. Rechtsgrundlage</h2>
 <p>Die Verarbeitung erfolgt auf Basis von:</p>
 <ul>
-    <li><strong>Art. 6 Abs. 1 lit. b DSGVO</strong> - Vertragserfuellung (Bereitstellung des Dienstes)</li>
-    <li><strong>Art. 6 Abs. 1 lit. f DSGVO</strong> - Berechtigtes Interesse (Betrugsschutz, Qualitaetssicherung)</li>
+    <li><strong>Art. 6 Abs. 1 lit. b DSGVO</strong> - Vertragserfuellung (Bereitstellung des Dienstes, Abo-Verwaltung)</li>
+    <li><strong>Art. 6 Abs. 1 lit. f DSGVO</strong> - Berechtigtes Interesse (Betrugsschutz, Qualitaetssicherung, Sicherheit des Dienstes)</li>
+    <li><strong>Art. 6 Abs. 1 lit. c DSGVO</strong> - Rechtliche Verpflichtung (Aufbewahrung von Zahlungsdaten gemaess Steuerrecht)</li>
 </ul>
 
 <h2>4. Drittanbieter und Datenuebermittlung</h2>
 
 <h3>4.1 Telegram</h3>
-<p>Wir nutzen die Telegram Bot API zur Kommunikation. Telegram verarbeitet deine Nachrichten gemaess deren <a href="https://telegram.org/privacy" target="_blank">Datenschutzrichtlinie</a>.</p>
+<p>Wir nutzen die Telegram Bot API zur Kommunikation. Telegram verarbeitet deine Nachrichten gemaess deren <a href="https://telegram.org/privacy" target="_blank">Datenschutzrichtlinie</a>. Telegram speichert Nachrichten auf ihren Servern (verschluesselt). Wir haben keinen Einfluss auf die Datenverarbeitung durch Telegram.</p>
 
 <h3>4.2 Anthropic (Claude AI)</h3>
-<p>Deine Fragen werden an Anthropic (USA) zur Verarbeitung durch Claude AI gesendet. Die Uebermittlung erfolgt auf Basis von Standardvertragsklauseln (SCCs) gemaess Art. 46 Abs. 2 lit. c DSGVO. Anthropic nutzt die Daten nicht zum Training ihrer Modelle.</p>
+<p>Deine Fragen (inkl. URLs beim Phishing-Check) werden an Anthropic (USA) zur Verarbeitung durch Claude AI gesendet. Die Uebermittlung erfolgt auf Basis von Standardvertragsklauseln (SCCs) gemaess Art. 46 Abs. 2 lit. c DSGVO. Laut Anthropics API-Nutzungsbedingungen werden API-Daten <strong>nicht zum Training</strong> ihrer Modelle verwendet.</p>
 
 <h3>4.3 Stripe (nur bei Bezahl-Abos)</h3>
-<p>Bei Pro- oder Business-Abos werden Zahlungsdaten durch Stripe (USA) verarbeitet. Stripe ist PCI DSS Level 1 zertifiziert. Wir speichern keine Kreditkartendaten. Mehr: <a href="https://stripe.com/de/privacy" target="_blank">Stripe Datenschutz</a></p>
+<p>Bei Pro- oder Business-Abos werden Zahlungsdaten durch Stripe Inc. (USA) verarbeitet. Stripe ist PCI DSS Level 1 zertifiziert. Wir speichern <strong>keine Kreditkartendaten</strong>. Die Datenuebermittlung erfolgt auf Basis von SCCs. Mehr: <a href="https://stripe.com/de/privacy" target="_blank">Stripe Datenschutz</a></p>
 
-<h3>4.4 Google Cloud Platform</h3>
-<p>Der Bot laeuft auf Servern in Frankfurt (europe-west3), Deutschland. Deine Daten verlassen die EU nur bei der Verarbeitung durch Claude AI (siehe 4.2).</p>
+<h3>4.4 Google Cloud Platform (Hosting)</h3>
+<p>Der Bot laeuft auf Servern von Google Cloud in <strong>Frankfurt (europe-west3), Deutschland</strong>. Deine Daten verlassen die EU nur bei der Verarbeitung durch Claude AI (siehe 4.2) und ggf. Stripe (siehe 4.3).</p>
+
+<h3>4.5 GitHub Pages (Webseite)</h3>
+<p>Unsere Landing Page wird auf GitHub Pages (GitHub Inc. / Microsoft Corp., USA) gehostet. Beim Besuch der Webseite werden technische Zugriffsdaten (IP-Adresse, Browser-Typ, Zugriffszeitpunkt) durch GitHub verarbeitet. Mehr: <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank">GitHub Privacy Statement</a></p>
 
 <h2>5. Speicherdauer</h2>
-<ul>
-    <li><strong>Account-Daten:</strong> Bis zur Loeschung durch dich (/loeschen)</li>
-    <li><strong>Fragen und Antworten:</strong> Bis zur Loeschung durch dich</li>
-    <li><strong>Zahlungsdaten:</strong> 10 Jahre (gesetzliche Aufbewahrungspflicht)</li>
-</ul>
+<table>
+    <tr>
+        <th>Datenart</th>
+        <th>Speicherdauer</th>
+        <th>Grund</th>
+    </tr>
+    <tr>
+        <td>Account-Daten</td>
+        <td>Bis zur Loeschung durch dich (/loeschen)</td>
+        <td>Vertragserfuellung</td>
+    </tr>
+    <tr>
+        <td>Fragen und Antworten</td>
+        <td>Bis zur Loeschung durch dich</td>
+        <td>Qualitaetssicherung</td>
+    </tr>
+    <tr>
+        <td>Phishing-Check URLs</td>
+        <td>Bis zur Loeschung durch dich</td>
+        <td>Dokumentation der Analyse</td>
+    </tr>
+    <tr>
+        <td>Zahlungsdaten (bei Stripe)</td>
+        <td>10 Jahre</td>
+        <td>Gesetzliche Aufbewahrungspflicht (&sect; 147 AO)</td>
+    </tr>
+    <tr>
+        <td>Spracheinstellung (Webseite)</td>
+        <td>Bis zur manuellen Loeschung im Browser</td>
+        <td>Komfortfunktion (localStorage)</td>
+    </tr>
+</table>
 
 <h2>6. Deine Rechte (DSGVO)</h2>
 <p>Du hast folgende Rechte:</p>
 <ul>
-    <li><strong>Auskunft (Art. 15)</strong> - Tippe /meinedaten im Bot</li>
-    <li><strong>Loeschung (Art. 17)</strong> - Tippe /loeschen im Bot</li>
+    <li><strong>Auskunft (Art. 15)</strong> - Tippe /meinedaten im Bot oder sende eine E-Mail an uns</li>
+    <li><strong>Loeschung (Art. 17)</strong> - Tippe /loeschen im Bot oder sende eine E-Mail an uns</li>
     <li><strong>Berichtigung (Art. 16)</strong> - Per E-Mail an uns</li>
-    <li><strong>Einschraenkung (Art. 18)</strong> - Per E-Mail an uns</li>
+    <li><strong>Einschraenkung der Verarbeitung (Art. 18)</strong> - Per E-Mail an uns</li>
     <li><strong>Datenuebertragbarkeit (Art. 20)</strong> - Per E-Mail an uns</li>
     <li><strong>Widerspruch (Art. 21)</strong> - Per E-Mail an uns</li>
 </ul>
+<p>Wir beantworten Anfragen innerhalb von <strong>30 Tagen</strong> (gemaess Art. 12 Abs. 3 DSGVO).</p>
 
 <h2>7. Automatisierte Entscheidungsfindung</h2>
-<p>Alle Antworten werden von Claude AI (Anthropic) generiert. Es handelt sich um KI-generierte Inhalte, keine professionelle Beratung. Die Nutzung erfolgt auf eigenes Risiko.</p>
+<p>SecureBot AI nutzt kuenstliche Intelligenz (Claude AI) zur Generierung von Antworten. Es handelt sich ausschliesslich um <strong>informative Inhalte</strong>. Es werden <strong>keine automatisierten Entscheidungen mit rechtlicher oder aehnlich erheblicher Wirkung</strong> im Sinne von Art. 22 DSGVO getroffen. Der Phishing-Checker gibt Risikoeinschaetzungen ab - die endgueltige Entscheidung liegt immer beim Nutzer.</p>
 
 <h2>8. Sicherheit</h2>
+<p>Wir schuetzen deine Daten durch folgende Massnahmen:</p>
 <ul>
-    <li>Verschluesselte Uebertragung (HTTPS/TLS)</li>
-    <li>Server in der EU (Frankfurt)</li>
+    <li>Verschluesselte Uebertragung (HTTPS/TLS) bei allen Verbindungen</li>
+    <li>Server in der EU (Frankfurt, Deutschland)</li>
     <li>Keine Speicherung von Passwoertern oder Zahlungsdaten durch uns</li>
-    <li>Regelmaessige Sicherheitsupdates</li>
+    <li>Regelmaessige Sicherheitsupdates und Code-Reviews</li>
+    <li>Input-Validierung und Schutz gegen Prompt Injection</li>
+    <li>Rate-Limiting zum Schutz gegen Missbrauch</li>
 </ul>
 
 <h2>9. Aufsichtsbehoerde</h2>
-<p>Du hast das Recht, dich bei der zustaendigen Aufsichtsbehoerde zu beschweren:</p>
+<p>Du hast das Recht, dich bei der zustaendigen Datenschutz-Aufsichtsbehoerde zu beschweren:</p>
 <p>
     <strong>Der Hamburgische Beauftragte fuer Datenschutz und Informationsfreiheit</strong><br>
+    Ludwig-Erhard-Str. 22, 7. OG, 20459 Hamburg<br>
+    Telefon: 040 / 428 54 - 4040<br>
     <a href="https://datenschutz-hamburg.de" target="_blank">https://datenschutz-hamburg.de</a>
 </p>
 
-<h2>10. Kontakt</h2>
+<h2>10. Aenderungen dieser Datenschutzerklaerung</h2>
+<p>Wir behalten uns vor, diese Datenschutzerklaerung bei Bedarf anzupassen, z.B. bei Einfuehrung neuer Features oder Aenderungen der Rechtslage. Die aktuelle Version ist stets auf unserer Webseite abrufbar. Bei wesentlichen Aenderungen informieren wir Nutzer ueber den Bot.</p>
+
+<h2>11. Kontakt</h2>
 <p>Bei Fragen zum Datenschutz:</p>
 <p>
+    AP Digital Solution<br>
+    Alexander Potzahr<br>
     E-Mail: <a href="mailto:securebot.ai.contact@gmail.com">securebot.ai.contact@gmail.com</a>
 </p>
 
 <div class="back-link">
-    <a href="/">Zurueck zur Startseite</a> | <a href="https://t.me/Lees_Securebot">Zum Bot</a>
+    <a href="/">Zurueck zur Startseite</a> | <a href="agb.html">AGB</a> | <a href="https://t.me/Lees_Securebot">Zum Bot</a>
 </div>
 
 </div>
