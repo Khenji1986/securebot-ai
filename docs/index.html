@@ -570,12 +570,16 @@
             <div class="hero-stat-number" id="attack-counter">0</div>
             <div class="hero-stat-label" data-i18n="hero_stat">Cyberangriffe seit du diese Seite geoeffnet hast</div>
         </div>
-        <h1 class="reveal" data-i18n="hero_h1"><span class="accent">Dein KI-Sicherheitsberater.</span><br>24/7. Sofort einsatzbereit.</h1>
+        <h1 class="reveal" data-i18n="hero_h1"><span class="accent">Phishing erkannt.</span><br>In 3 Sekunden. 24/7.</h1>
         <p class="hero-sub reveal" data-i18n="hero_sub">Phishing-Mail erhalten? Unsicher ob der Link echt ist?<br><strong>Frag SecureBot - in 3 Sekunden weisst du Bescheid.</strong></p>
         <a href="https://t.me/Lees_Securebot" class="cta-primary reveal" data-i18n="hero_cta">Jetzt kostenlos testen</a>
         <div class="hero-trust reveal">
             <span class="hero-trust-icon">&#x1F512;</span>
             <span data-i18n="hero_trust">Kein Login. Laeuft ueber Telegram. In 30 Sekunden startklar.</span>
+        </div>
+        <div class="hero-trust reveal" style="margin-top:8px">
+            <span class="hero-trust-icon">&#x1F680;</span>
+            <span data-i18n="hero_early" style="color:#00d4ff;font-weight:600">Early Access - Sei einer der Ersten.</span>
         </div>
     </div>
 </section>
@@ -682,6 +686,7 @@
 <section class="pricing" id="pricing">
     <div class="container">
         <h2 class="reveal" data-i18n="pricing_h2">Einfache Preise</h2>
+        <p class="reveal" style="text-align:center;color:#666;margin-bottom:32px;font-size:0.95rem" data-i18n="pricing_anchor">Ein Security-Berater kostet 150+ EUR/Stunde. SecureBot AI: ab 0 EUR.</p>
         <div class="price-toggle reveal">
             <span class="toggle-label active" id="label-monthly" data-i18n="toggle_monthly">Monatlich</span>
             <div class="toggle-switch" id="price-toggle" onclick="togglePricing()"></div>
@@ -703,7 +708,7 @@
             <div class="price-card featured reveal" data-badge-de="BELIEBT" data-badge-en="POPULAR" data-badge="BELIEBT">
                 <h3>Pro</h3>
                 <div class="price-amount price-monthly">9,99 EUR <span>/</span><span data-i18n="per_month">Monat</span></div>
-                <div class="price-amount price-yearly" style="display:none">99,90 EUR <span>/</span><span data-i18n="per_year">Jahr</span></div>
+                <div class="price-amount price-yearly" style="display:none"><span style="text-decoration:line-through;color:#555;font-size:1.4rem">119,88 EUR</span> 99,90 EUR <span>/</span><span data-i18n="per_year">Jahr</span></div>
                 <ul class="price-features">
                     <li class="hl" data-i18n="pro_f1">Security Audit mit KI-Empfehlungen</li>
                     <li class="hl" data-i18n="pro_f2">Phishing KI-Tiefenanalyse</li>
@@ -718,7 +723,7 @@
             <div class="price-card reveal">
                 <h3>Business</h3>
                 <div class="price-amount price-monthly">29,99 EUR <span>/</span><span data-i18n="per_month">Monat</span></div>
-                <div class="price-amount price-yearly" style="display:none">299,90 EUR <span>/</span><span data-i18n="per_year">Jahr</span></div>
+                <div class="price-amount price-yearly" style="display:none"><span style="text-decoration:line-through;color:#555;font-size:1.4rem">359,88 EUR</span> 299,90 EUR <span>/</span><span data-i18n="per_year">Jahr</span></div>
                 <ul class="price-features">
                     <li class="hl" data-i18n="biz_f1">Alles aus Pro +</li>
                     <li class="hl" data-i18n="biz_f2">Incident Response Guide</li>
@@ -803,10 +808,16 @@
             <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2"/></svg>
             <span data-i18n="trust_3">EU AI Act konform</span>
         </div>
+        <div class="trust-badge">
+            <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <span data-i18n="trust_4">Quantum-Safe Design</span>
+        </div>
     </div>
     <div class="footer-links">
         <a href="https://t.me/Lees_Securebot">Telegram Bot</a>
         <a href="mailto:securebot.ai.contact@gmail.com" data-i18n="footer_contact">Kontakt</a>
+        <a href="agb.html" data-i18n="footer_agb">AGB</a>
+        <a href="datenschutz.html" data-i18n="footer_datenschutz">Datenschutz</a>
     </div>
     <p class="footer-legal">
         AP Digital Solution - Alexander Potzahr, Hamburg | <span data-i18n="footer_legal">Kleinunternehmer gem. &sect; 19 UStG</span>
@@ -821,7 +832,7 @@ const T = {
 de: {
     nav_cta: "Jetzt testen",
     hero_stat: "Cyberangriffe seit du diese Seite ge\u00f6ffnet hast",
-    hero_h1: '<span class="accent">Dein KI-Sicherheitsberater.</span><br>24/7. Sofort einsatzbereit.',
+    hero_h1: '<span class="accent">Phishing erkannt.</span><br>In 3 Sekunden. 24/7.',
     hero_sub: 'Phishing-Mail erhalten? Unsicher ob der Link echt ist?<br><strong>Frag SecureBot \u2013 in 3 Sekunden wei\u00dft du Bescheid.</strong>',
     hero_cta: "Jetzt kostenlos testen",
     hero_trust: "Kein Login. L\u00e4uft \u00fcber Telegram. In 30 Sekunden startklar.",
@@ -886,12 +897,17 @@ de: {
     trust_2: "Server in Frankfurt",
     trust_3: "EU AI Act konform",
     footer_contact: "Kontakt",
-    footer_legal: "Kleinunternehmer gem. \u00a7 19 UStG"
+    footer_legal: "Kleinunternehmer gem. \u00a7 19 UStG",
+    hero_early: "Early Access \u2013 Sei einer der Ersten.",
+    pricing_anchor: "Ein Security-Berater kostet 150+ EUR/Stunde. SecureBot AI: ab 0 EUR.",
+    trust_4: "Quantum-Safe Design",
+    footer_agb: "AGB",
+    footer_datenschutz: "Datenschutz"
 },
 en: {
     nav_cta: "Try now",
     hero_stat: "Cyberattacks since you opened this page",
-    hero_h1: '<span class="accent">Your AI Security Advisor.</span><br>24/7. Instant.',
+    hero_h1: '<span class="accent">Phishing detected.</span><br>In 3 seconds. 24/7.',
     hero_sub: 'Received a phishing email? Unsure if a link is legit?<br><strong>Ask SecureBot \u2013 know in 3 seconds.</strong>',
     hero_cta: "Try for free now",
     hero_trust: "No login. Runs on Telegram. Ready in 30 seconds.",
@@ -956,7 +972,12 @@ en: {
     trust_2: "Server in Frankfurt",
     trust_3: "EU AI Act compliant",
     footer_contact: "Contact",
-    footer_legal: "Small business acc. to \u00a7 19 UStG"
+    footer_legal: "Small business acc. to \u00a7 19 UStG",
+    hero_early: "Early Access \u2013 Be one of the first.",
+    pricing_anchor: "A security consultant costs 150+ EUR/hour. SecureBot AI: from 0 EUR.",
+    trust_4: "Quantum-Safe Design",
+    footer_agb: "Terms",
+    footer_datenschutz: "Privacy"
 }
 };
 
@@ -1020,11 +1041,9 @@ let counterStart = null;
 const counterEl = document.getElementById('attack-counter');
 function updateCounter(timestamp) {
     if (!counterStart) counterStart = timestamp;
-    // ~1 attack every 39 seconds = ~0.02564 per second
+    // University of Maryland study: 1 cyberattack every 39 seconds
     const elapsed = (timestamp - counterStart) / 1000;
-    const attacks = Math.floor(elapsed / 39 * 1000); // Accelerated for visual impact: ~25.6/sec
-    // More realistic but still impressive: show elapsed/39 scaled up
-    const displayed = Math.floor(elapsed * 0.7); // ~0.7 attacks per second visual
+    const displayed = Math.floor(elapsed / 39);
     counterEl.textContent = displayed.toLocaleString();
     requestAnimationFrame(updateCounter);
 }
