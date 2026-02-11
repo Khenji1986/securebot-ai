@@ -14,3 +14,36 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; exit(0 if os.path.exists('/app/data/securebot.db') else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  guardian:
+    build:
+      context: .
+      dockerfile: Dockerfile.guardian
+    container_name: securebot-guardian
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./backups:/app/backups
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+      - /var/log:/host/log:ro
+    depends_on:
+      - securebot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.15'

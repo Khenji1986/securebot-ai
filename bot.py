@@ -9,6 +9,7 @@ Powered by Claude AI (Anthropic)
 import os
 import re
 import json
+import time
 import logging
 import sqlite3
 from datetime import datetime, timedelta
@@ -40,7 +41,12 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 # Environment Variables
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")  # Lee's Telegram ID
+_admin_id_str = os.getenv("ADMIN_USER_ID", "")  # Lee's Telegram ID
+try:
+    ADMIN_USER_ID = int(_admin_id_str) if _admin_id_str.strip() else None
+except ValueError:
+    logger.error(f"ADMIN_USER_ID ist keine gültige Zahl: '{_admin_id_str}' - Admin-Funktionen deaktiviert!")
+    ADMIN_USER_ID = None
 STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
 
 # Stripe Setup
@@ -52,6 +58,11 @@ PRO_DAILY_LIMIT = 20
 BUSINESS_DAILY_LIMIT = 30
 PRO_MONTHLY_PRICE = 9.99
 BUSINESS_MONTHLY_PRICE = 29.99
+
+# Admin-Check Helper (typsicher, kein Spoofing möglich)
+def is_admin(user_id: int) -> bool:
+    """Prüft ob user_id der Admin (Lee) ist. Typsicherer int-Vergleich."""
+    return ADMIN_USER_ID is not None and isinstance(user_id, int) and user_id == ADMIN_USER_ID
 
 # Claude Client
 client = Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -69,6 +80,21 @@ QUESTION_WORDS = ['wie', 'was ', 'warum', 'wann', 'wer ', 'welch', 'kann ', 'sol
 
 # Phishing Rate-Limit
 PHISHING_DAILY_LIMIT = 10
+
+# Burst Rate-Limit (In-Memory): min. 3 Sekunden zwischen Anfragen
+LAST_REQUEST_TIME = {}  # {user_id: timestamp}
+BURST_COOLDOWN = 3  # Sekunden
+
+
+async def check_burst_limit(update: Update, user_id: int) -> bool:
+    """Prüft Burst-Rate-Limit. Gibt True zurück wenn gedrosselt (= abbrechen)."""
+    now = time.time()
+    last_request = LAST_REQUEST_TIME.get(user_id, 0)
+    if now - last_request < BURST_COOLDOWN:
+        await update.message.reply_text("⚠️ Bitte warte kurz zwischen Anfragen.")
+        return True
+    LAST_REQUEST_TIME[user_id] = now
+    return False
 
 # System Prompt für Security-Expertise
 SYSTEM_PROMPT = """Du bist SecureBot AI, ein erfahrener IT-Security Berater.
@@ -643,6 +669,18 @@ def log_phishing_check(user_id: int, input_text: str, urls: list, risk_score: in
 async def handle_phishing_check(update: Update, context: ContextTypes.DEFAULT_TYPE, urls: list, original_text: str):
     """Haupt-Phishing-Check Handler"""
     user_id = update.effective_user.id
+
+    # Phishing Rate-Limit prüfen
+    conn = sqlite3.connect('/app/data/securebot.db')
+    c = conn.cursor()
+    today = datetime.now().strftime('%Y-%m-%d')
+    c.execute("SELECT COUNT(*) FROM phishing_checks WHERE user_id = ? AND date(created_at) = ?", (user_id, today))
+    phishing_count = c.fetchone()[0]
+    conn.close()
+    if phishing_count >= PHISHING_DAILY_LIMIT:
+        await update.message.reply_text(f"⚠️ Phishing-Check-Limit erreicht ({PHISHING_DAILY_LIMIT}/Tag). Morgen wieder verfügbar!")
+        return
+
     thinking_msg = await update.message.reply_text("🔍 Analysiere auf Phishing-Indikatoren...")
 
     results = []
@@ -708,6 +746,8 @@ async def handle_phishing_check(update: Update, context: ContextTypes.DEFAULT_TY
 
 async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/check - Expliziter Phishing-Check"""
+    if await check_burst_limit(update, update.effective_user.id):
+        return
     if not context.args:
         await update.message.reply_text(
             "🛡️ Phishing-Checker\n\n"
@@ -764,6 +804,8 @@ def calculate_audit_grade(total_score: int) -> tuple:
 async def audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/audit - Security Quick-Check starten"""
     user_id = update.effective_user.id
+    if await check_burst_limit(update, user_id):
+        return
     subscription = get_effective_subscription(user_id)
 
     if subscription == 'free':
@@ -1220,7 +1262,7 @@ async def trial(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if ADMIN_USER_ID:
         try:
             await context.bot.send_message(
-                chat_id=int(ADMIN_USER_ID),
+                chat_id=ADMIN_USER_ID,
                 text=f"🆓 **Neues Trial:** @{update.effective_user.username} (7 Tage Pro bis {end_date})",
                 parse_mode='Markdown'
             )
@@ -1343,6 +1385,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             f"Deine Nachricht ist zu lang (max. {MAX_INPUT_LENGTH} Zeichen). Bitte kürze deine Frage."
         )
+        return
+
+    # Burst Rate-Limit: min. 3 Sekunden zwischen Anfragen
+    if await check_burst_limit(update, user_id):
         return
 
     # User registrieren
@@ -1595,7 +1641,7 @@ async def loeschen(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if ADMIN_USER_ID:
         try:
             await context.bot.send_message(
-                chat_id=int(ADMIN_USER_ID),
+                chat_id=ADMIN_USER_ID,
                 text=f"🗑️ **Datenlöschung durchgeführt**\n\n"
                      f"User ID: {user_id}\n"
                      f"Username: @{update.effective_user.username or 'unbekannt'}",
@@ -1632,6 +1678,8 @@ async def ask_support_agent(question: str, user_info: str) -> str:
 
 async def support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Support starten"""
+    if await check_burst_limit(update, update.effective_user.id):
+        return
     context.user_data['mode'] = 'support'
 
     keyboard = [
@@ -1697,7 +1745,7 @@ async def handle_support_callback(query, context):
         await query.edit_message_text(f"🎧 **Support:**\n\n{clean_response}", parse_mode='Markdown')
         try:
             await context.bot.send_message(
-                chat_id=int(ADMIN_USER_ID),
+                chat_id=ADMIN_USER_ID,
                 text=f"🚨 **Support-Eskalation!**\n\n"
                      f"Kunde: @{user.username} ({user.first_name})\n"
                      f"Plan: {user_data['subscription']}\n"
@@ -1755,7 +1803,7 @@ async def handle_support_message(update: Update, context: ContextTypes.DEFAULT_T
         if ADMIN_USER_ID:
             try:
                 await context.bot.send_message(
-                    chat_id=int(ADMIN_USER_ID),
+                    chat_id=ADMIN_USER_ID,
                     text=f"🚨 **Kunde will persönlichen Support!**\n\n"
                          f"Kunde: @{user.username} ({user.first_name})\n"
                          f"Plan: {subscription.upper()}\n"
@@ -1807,7 +1855,7 @@ async def handle_support_message(update: Update, context: ContextTypes.DEFAULT_T
             context.user_data['mode'] = 'support'
             try:
                 await context.bot.send_message(
-                    chat_id=int(ADMIN_USER_ID),
+                    chat_id=ADMIN_USER_ID,
                     text=f"🔴 **Business-Eskalation (AI konnte nicht lösen)!**\n\n"
                          f"Kunde: @{user.username} ({user.first_name})\n"
                          f"Anliegen: {question}\n\n"
@@ -1844,7 +1892,7 @@ async def handle_support_message(update: Update, context: ContextTypes.DEFAULT_T
     if escalated and ADMIN_USER_ID:
         try:
             await context.bot.send_message(
-                chat_id=int(ADMIN_USER_ID),
+                chat_id=ADMIN_USER_ID,
                 text=f"🚨 **Support-Eskalation!**\n\n"
                      f"Kunde: @{user.username} ({user.first_name})\n"
                      f"Anliegen: {question}\n\n"
@@ -1861,8 +1909,8 @@ async def admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Lee antwortet einem Kunden direkt
     Usage: /reply <user_id> <nachricht>
     """
-    user_id = str(update.effective_user.id)
-    if user_id != ADMIN_USER_ID:
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
         return
 
     args = context.args
@@ -2017,36 +2065,60 @@ async def check_stripe_payments(context: ContextTypes.DEFAULT_TYPE):
         # Letzte abgeschlossene Checkout Sessions holen
         sessions = stripe.checkout.Session.list(status='complete', limit=20)
 
+        # Timestamp-Validierung: Sessions älter als 24h ignorieren (Security)
+        cutoff_time = int(time.time()) - 86400
+
         conn = sqlite3.connect('/app/data/securebot.db')
         c = conn.cursor()
 
         for session in sessions.data:
+            # Alte Sessions ignorieren (älter als 24h)
+            if hasattr(session, 'created') and session.created < cutoff_time:
+                continue
+
             # Schon verarbeitet?
             c.execute('SELECT 1 FROM stripe_payments WHERE session_id = ?', (session.id,))
             if c.fetchone():
                 continue
 
-            # Telegram Username aus Custom Fields holen
+            # Payment-Status prüfen (muss bezahlt sein)
+            if session.payment_status != 'paid':
+                logger.warning(f"Stripe Session {session.id}: Payment nicht bezahlt (Status: {session.payment_status})")
+                continue
+
+            # Währung prüfen (nur EUR akzeptiert)
+            if session.currency and session.currency.lower() != 'eur':
+                logger.warning(f"Stripe Session {session.id}: Falsche Währung: {session.currency}")
+                continue
+
+            # Telegram Username aus Custom Fields holen + validieren
             telegram_username = None
             if session.custom_fields:
                 for field in session.custom_fields:
                     if field.text and field.text.value:
-                        telegram_username = field.text.value.lstrip('@').strip()
+                        raw_username = field.text.value.lstrip('@').strip().lower()
+                        # Telegram Username-Validierung: 5-32 Zeichen, alphanumerisch + Underscore
+                        if re.match(r'^[a-z0-9_]{5,32}$', raw_username):
+                            telegram_username = raw_username
+                        else:
+                            logger.warning(f"Stripe Session {session.id}: Ungültiger Username-Format: '{raw_username}'")
                         break
 
             if not telegram_username:
-                logger.warning(f"Stripe Session {session.id}: Kein Telegram Username gefunden")
+                logger.warning(f"Stripe Session {session.id}: Kein gültiger Telegram Username gefunden")
                 continue
 
-            # Plan bestimmen anhand des Betrags (in Cent)
-            # Pro: 999 (monatlich) oder 9990 (jährlich)
-            # Business: 2999 (monatlich) oder 29990 (jährlich)
+            # Plan bestimmen anhand des exakten Betrags (in Cent)
             amount = session.amount_total
-            if amount >= 29990 or amount == 2999:
-                plan = 'business'
-            elif amount >= 9990 or amount == 999:
-                plan = 'pro'
-            else:
+            PLAN_PRICES = {
+                999: 'pro',       # 9,99€/Monat
+                9990: 'pro',      # 99,90€/Jahr
+                2999: 'business', # 29,99€/Monat
+                29990: 'business' # 299,90€/Jahr
+            }
+            plan = PLAN_PRICES.get(amount)
+            if not plan:
+                logger.warning(f"Stripe: Unbekannter Betrag {amount} Cent - Session {session.id}")
                 continue
 
             # Stripe Subscription-ID holen (für Recurring)
@@ -2054,30 +2126,33 @@ async def check_stripe_payments(context: ContextTypes.DEFAULT_TYPE):
             if session.subscription:
                 stripe_sub_id = session.subscription
 
-            # User in DB finden und aktivieren
+            # User in DB finden und aktivieren (case-insensitive)
             if stripe_sub_id:
                 # Recurring: Kein festes Enddatum, Stripe bestimmt
                 c.execute(
-                    'UPDATE users SET subscription = ?, subscription_end = NULL, stripe_subscription_id = ? WHERE username = ?',
+                    'UPDATE users SET subscription = ?, subscription_end = NULL, stripe_subscription_id = ? WHERE LOWER(username) = ?',
                     (plan, stripe_sub_id, telegram_username)
                 )
             else:
                 # Einmalzahlung (Fallback): 30 Tage
                 end_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
                 c.execute(
-                    'UPDATE users SET subscription = ?, subscription_end = ? WHERE username = ?',
+                    'UPDATE users SET subscription = ?, subscription_end = ? WHERE LOWER(username) = ?',
                     (plan, end_date, telegram_username)
                 )
 
-            # Zahlung als verarbeitet markieren
+            # UPDATE-Ergebnis sichern BEVOR INSERT (rowcount wird überschrieben)
+            user_updated = c.rowcount > 0
+
+            # Zahlung als verarbeitet markieren (immer, auch wenn User nicht gefunden)
             c.execute(
                 'INSERT INTO stripe_payments (session_id, telegram_username, plan, amount) VALUES (?, ?, ?, ?)',
                 (session.id, telegram_username, plan, amount)
             )
 
-            if c.rowcount > 0:
+            if user_updated:
                 # User per Telegram benachrichtigen
-                c.execute('SELECT user_id FROM users WHERE username = ?', (telegram_username,))
+                c.execute('SELECT user_id FROM users WHERE LOWER(username) = ?', (telegram_username,))
                 user_row = c.fetchone()
                 if user_row:
                     try:
@@ -2100,7 +2175,7 @@ async def check_stripe_payments(context: ContextTypes.DEFAULT_TYPE):
                 if ADMIN_USER_ID:
                     try:
                         await context.bot.send_message(
-                            chat_id=int(ADMIN_USER_ID),
+                            chat_id=ADMIN_USER_ID,
                             text=f"💰 **Neue Zahlung!**\n\n"
                                  f"@{telegram_username} → {plan.upper()}\n"
                                  f"Betrag: {amount/100:.2f}€\n"
@@ -2167,7 +2242,7 @@ async def check_subscription_expiry(context: ContextTypes.DEFAULT_TYPE):
                     if ADMIN_USER_ID:
                         try:
                             await context.bot.send_message(
-                                chat_id=int(ADMIN_USER_ID),
+                                chat_id=ADMIN_USER_ID,
                                 text=f"📉 **Stripe Abo beendet:** @{username} ({plan.upper()}) - Status: {stripe_sub.status}",
                                 parse_mode='Markdown'
                             )
@@ -2234,7 +2309,7 @@ async def check_subscription_expiry(context: ContextTypes.DEFAULT_TYPE):
         if ADMIN_USER_ID:
             try:
                 await context.bot.send_message(
-                    chat_id=int(ADMIN_USER_ID),
+                    chat_id=ADMIN_USER_ID,
                     text=f"📉 **Abo abgelaufen:** @{user_row[1]} ({user_row[2].upper()})",
                     parse_mode='Markdown'
                 )
@@ -2253,8 +2328,8 @@ async def admin_activate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     Usage: /activate <username> <plan> <tage>
     Beispiel: /activate @MaxMuster pro 30
     """
-    user_id = str(update.effective_user.id)
-    if user_id != ADMIN_USER_ID:
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
         return
 
     args = context.args
@@ -2299,9 +2374,9 @@ async def admin_activate(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def admin_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Admin Stats - nur für Lee"""
-    user_id = str(update.effective_user.id)
+    user_id = update.effective_user.id
 
-    if user_id != ADMIN_USER_ID:
+    if not is_admin(user_id):
         return
 
     conn = sqlite3.connect('/app/data/securebot.db')
@@ -2311,13 +2386,13 @@ async def admin_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     c.execute('SELECT COUNT(*) FROM users')
     total_users = c.fetchone()[0]
 
-    c.execute('SELECT COUNT(*) FROM users WHERE subscription = "pro"')
+    c.execute('SELECT COUNT(*) FROM users WHERE subscription = ?', ('pro',))
     pro_users = c.fetchone()[0]
 
     c.execute('SELECT COUNT(*) FROM usage')
     total_queries = c.fetchone()[0]
 
-    c.execute('SELECT COUNT(*) FROM usage WHERE date(created_at) = date("now")')
+    c.execute("SELECT COUNT(*) FROM usage WHERE date(created_at) = date('now')")
     today_queries = c.fetchone()[0]
 
     conn.close()
@@ -2341,6 +2416,40 @@ async def admin_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 """
 
     await update.message.reply_text(stats_text, parse_mode='Markdown')
+
+
+async def soc_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """SOC Guardian Status - nur für Lee"""
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
+        return
+
+    status_file = '/app/data/guardian_status.json'
+    if os.path.exists(status_file):
+        try:
+            with open(status_file, 'r') as f:
+                s = json.load(f)
+
+            text = (
+                "🛡️ **SOC Guardian Status**\n\n"
+                f"**System:**\n"
+                f"• CPU: {s.get('cpu_percent', '?')}%\n"
+                f"• RAM: {s.get('ram_percent', '?')}%\n"
+                f"• Disk: {s.get('disk_percent', '?')}%\n\n"
+                f"**Guardian:**\n"
+                f"• Letzter Check: {s.get('last_check', '?')}\n"
+                f"• Uptime: {s.get('uptime_hours', 0):.1f}h\n"
+                f"• Alerts heute: {s.get('alerts_today', 0)}\n\n"
+                f"**Daten:**\n"
+                f"• DB: {s.get('db_size_kb', '?')} KB\n"
+                f"• Letztes Backup: {s.get('last_backup', 'Noch nie')}\n"
+            )
+        except Exception as e:
+            text = f"⚠️ SOC Status Fehler: {e}"
+    else:
+        text = "⚠️ Guardian läuft nicht oder hat noch keinen Status geschrieben."
+
+    await update.message.reply_text(text, parse_mode='Markdown')
 
 
 def main():
@@ -2371,6 +2480,7 @@ def main():
     application.add_handler(CommandHandler("check", check_command))
     application.add_handler(CommandHandler("audit", audit_command))
     application.add_handler(CommandHandler("incident", incident_command))
+    application.add_handler(CommandHandler("soc", soc_command))
     application.add_handler(CallbackQueryHandler(button_callback))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 

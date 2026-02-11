@@ -1,0 +1,11 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements-monitor.txt .
+RUN pip install --no-cache-dir -r requirements-monitor.txt
+
+COPY security_monitor.py .
+RUN mkdir -p /app/backups
+
+CMD ["python", "-u", "security_monitor.py"]

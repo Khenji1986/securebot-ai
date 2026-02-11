@@ -12,6 +12,12 @@ __pycache__/
 dist/
 build/
 
+# Backups
+backups/
+
+# Guardian Status
+data/guardian_status.json
+
 # IDE
 .vscode/
 .idea/
